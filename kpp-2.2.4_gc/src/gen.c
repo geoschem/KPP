@@ -2264,10 +2264,10 @@ int mxyz;
    Declare( VAR );
    Declare( FIX );
    WriteComment("VAR, FIX are chunks of array C");
-   F77_Inline("      EQUIVALENCE( %s(%d),%s(1) )", 
+   F77_Inline("!      EQUIVALENCE( %s(%d),%s(1) )", 
             varTable[C]->name, 1, varTable[VAR]->name );
    if ( FixNr > 0 ) { /*  mz_rs_20050121 */
-     F77_Inline("      EQUIVALENCE( %s(%d),%s(1) )", 
+     F77_Inline("!      EQUIVALENCE( %s(%d),%s(1) )", 
        varTable[C]->name, VarNr+1, varTable[FIX]->name );
    }
   }
@@ -2276,10 +2276,10 @@ int mxyz;
      ExternDeclare( VAR );
      ExternDeclare( FIX );
      WriteComment("VAR, FIX are chunks of array C");
-     F90_Inline("      EQUIVALENCE( %s(%d),%s(1) )", 
+     F90_Inline("!      EQUIVALENCE( %s(%d),%s(1) )", 
             varTable[C]->name, 1, varTable[VAR]->name );
      if ( FixNr > 0 ) { /*  mz_rs_20050121 */
-       F90_Inline("      EQUIVALENCE( %s(%d),%s(1) )", 
+       F90_Inline("!      EQUIVALENCE( %s(%d),%s(1) )", 
          varTable[C]->name, VarNr+1, varTable[FIX]->name );
      }
   }
@@ -2898,6 +2898,7 @@ case 'h':
       F90_Inline("  USE %s_Parameters", rootFileName );
     F90_Inline("  IMPLICIT NONE\n", rootFileName );
     Declare( A ); /*  mz_rs_20050117 */
+    WriteOMPThreadPrivate(" A "); /* msl_20160419 */
     F90_Inline("\nCONTAINS\n\n");
 
   UseFile( rateFile );
