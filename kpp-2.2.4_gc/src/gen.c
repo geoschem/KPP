@@ -622,6 +622,7 @@ int F_VAR, FSPLIT_VAR;
     NewLines(1);
     WriteComment("Local variables");
     Declare( A );
+    WriteOMPThreadPrivate("A");
   }  
   NewLines(1);
   WriteComment("Computation of equation rates");
