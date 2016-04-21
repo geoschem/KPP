@@ -3,7 +3,7 @@
 #JACOBIAN SPARSE_LU_ROW
 
 #DOUBLE ON 
-#INTFILE rosenbrock
+#INTFILE rosenbrock_split
 
 #INLINE F77_GLOBAL
       INTEGER Autonomous
