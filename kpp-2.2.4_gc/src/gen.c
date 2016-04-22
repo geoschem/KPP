@@ -682,15 +682,15 @@ int F_VAR, FSPLIT_VAR;
     NewLines(1);
     WriteComment("Destruction function");
 
-    /* msl_20160421 */
+    /* msl_20160421
     for (i = 0; i < VarNr; i++) {
       sum = Const(0);
       for (j = 0; j < EqnNr; j++) 
         sum = Add( sum, Mul( Const( Stoich_Left[i][j] ), Elm( A, j ) ) );
       Assign( Elm( D_VAR, i ), sum );
     }
-    
-    /*
+    */
+
     for (i = 0; i < VarNr; i++) {
       sum = Const(0);       
       for(j=0; j<EqnNr; j++) {
@@ -708,7 +708,6 @@ int F_VAR, FSPLIT_VAR;
       }
       Assign( Elm( D_VAR, i ), sum );
     }
-    */
   }   
 
   if( useAggregate )

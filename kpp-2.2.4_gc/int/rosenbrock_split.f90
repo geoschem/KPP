@@ -1273,7 +1273,7 @@ SUBROUTINE FunSplitTemplate( T, Y, Ydot, P_VAR, D_VAR )
    CALL Update_SUN()
    CALL Update_RCONST()
    CALL Fun_SPLIT( Y, FIX, RCONST, P, D )
-   Ydot = P - D
+   Ydot = P - D*y
    TIME = Told
    
    IF (Present(P_VAR)) P_VAR=P
