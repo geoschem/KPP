@@ -43,7 +43,7 @@
 /*  mz_rs_20050518- */
           
 enum eq_state { LHS, RHS, RAT };
-enum sptypes { DUMMY_SPC, VAR_SPC, RAD_SPC, FIX_SPC };
+enum sptypes { DUMMY_SPC, VAR_SPC, RAD_SPC, FIX_SPC, PL_SPC };
 enum atomcheck { NO_CHECK, DO_CHECK, CANCEL_CHECK };
 enum codetype { APPEND, REPLACE };
 

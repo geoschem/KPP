@@ -46,6 +46,7 @@ int VarActiveNr  = 0;
 int FixNr     = 0;
 int VarStartNr   = 0;
 int FixStartNr   = 0;
+int plNr         = 0;
 
 
 int initNr = -1;
@@ -104,6 +105,7 @@ int useDummyindex  = 0;
 int useEqntags     = 0;
 int useLang        = F77_LANG;
 int useStochastic  = 0;
+int doFlux         = 0;
 /* if useValues=1 KPP replaces parameters like NVAR etc. 
        by their values in vector/matrix declarations */
 int useDeclareValues = 0; 
@@ -377,6 +379,19 @@ void CmdRun( char *cmd )
   strcpy( runArgs, cmd );
 }
 
+void CmdFlux( char *cmd )
+{
+  if( EqNoCase( cmd, "OFF" ) ) {
+    doFlux = 0;
+    return;
+  }
+  if( EqNoCase( cmd, "ON" ) ) {
+    doFlux = 1;
+    return;
+  }
+  ScanError("'%s': Unknown parameter for #FLUX [ON|OFF]", cmd );
+}
+
 int FindAtom( char *atname )
 {
 int i;
@@ -476,6 +491,7 @@ int i;
       SpeciesTable[ index ].atoms[i] = crtAtoms[i];
   }
   crtAtomNr = 0;
+  /* printf("\n Stored %s of type %d with index %d", spname, type, index);*/
 }
 
 void DeclareSpecies( int type, char *spname )
@@ -679,17 +695,34 @@ int code;
 CODE crtSpec;
 double val;
 char buf[40];
+char spstr[40]; /* msl_270416 */
+char eqNr[40]; /* msl_270416 */
+
+ if ( EqNoCase(spname, "RR") ) {
+   if ( doFlux == 1 ) {
+     sprintf(eqNr, "%d", EqnNr+1);
+     strcpy( spstr, spname );
+     strcat( spstr, eqNr );
+     DeclareSpecies( VAR_SPC, spstr );
+     /*printf("\nAdded species %s to %d (LHS=%d; RHS=%d)",spstr,side,LHS,RHS); /*msl*/
+   }
+   else {
+     return;
+   }}
+   else  {
+     strcpy( spstr, spname );
+   }
 
 
-  code = FindSpecies( spname );
+  code = FindSpecies( spstr );
   if ( code < 0 ) {
-    ScanError("Undefined species %s.", spname );
+    ScanError("Undefined species %s.", spstr );
     return;
   }
   
   crtSpec = ReverseCode[ code ];
 
-  if(EqNoCase(spname,"HV")) isPhoto = 1;
+  if(EqNoCase(spstr,"HV")) isPhoto = 1;
 
   if ( crtSpec == NO_CODE ) {
     if( MAX_SPECIES - code <= 2 ) falseSpcNr++;

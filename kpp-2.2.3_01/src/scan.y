@@ -90,6 +90,7 @@
 %token      TPTID USEID
 %type <str> TPTID USEID
 %type <str> rate eqntag
+%token FLUX
 
 %%
 
@@ -200,6 +201,9 @@ section	        : JACOBIAN PARAMETER
                   {}
                 | SPARSEDATA PARAMETER
 		  { SparseData( $2 );
+                  }
+                | FLUX PARAMETER
+		  { CmdFlux( $2 );
                   }
                 ;  
 semicolon       : semicolon ';'
@@ -343,7 +347,9 @@ lefths          : expresion EQNEQUAL
                   { eqState = RHS; }
                 ;   
 righths         : expresion EQNCOLON
-                  { eqState = RAT; }
+                   { ProcessTerm( eqState, "+", "1", "RR" ); /*Add a prod/loss species as last prod.*/ 
+		    eqState = RAT;
+		  }
                 ;
 expresion       : expresion EQNSIGN term
                   { ProcessTerm( eqState, $2, crt_coef, crt_term ); 

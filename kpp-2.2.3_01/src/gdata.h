@@ -119,6 +119,7 @@ extern int AtomNr;
 extern int VarNr;
 extern int VarActiveNr;
 extern int FixNr;
+extern int plNr; 
 extern int VarStartNr;
 extern int FixStartNr;
 extern int Hess_NZ;
@@ -146,6 +147,7 @@ extern int useDummyindex;
 extern int useEqntags;
 extern int useLang;
 extern int useStochastic;
+extern int doFlux;
 
 /* if useValues=1 KPP replaces parameters like NVAR etc. 
        by their values in vector/matrix declarations */
@@ -198,6 +200,7 @@ void CmdIntegrator( char *cmd );
 void CmdDriver( char *cmd );
 void CmdRun( char *cmd );
 void CmdStochastic( char *cmd );
+void CmdFlux( char *cmd );
 
 void Generate();
 
