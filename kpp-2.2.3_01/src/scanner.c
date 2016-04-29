@@ -479,6 +479,15 @@ void StoreSpecies( int index, int type, char *spname )
 {
 int i;
 
+ /*msl*/
+ if ( type == PL_SPC ) {
+   type = VAR_SPC;
+   SpeciesTable[ index ].flux = 1; /* holding value */
+ }
+ else {
+   SpeciesTable[ index ].flux = 0; /* indicates NOT a flux species */
+ }
+ /*msl*/
   strcpy( SpeciesTable[ index ].name, spname );
   SpeciesTable[ index ].type = type; 
   *SpeciesTable[ index ].ival = '\0'; 
@@ -703,7 +712,7 @@ char eqNr[40]; /* msl_270416 */
      sprintf(eqNr, "%d", EqnNr+1);
      strcpy( spstr, spname );
      strcat( spstr, eqNr );
-     DeclareSpecies( VAR_SPC, spstr );
+     DeclareSpecies( PL_SPC, spstr );
      /*printf("\nAdded species %s to %d (LHS=%d; RHS=%d)",spstr,side,LHS,RHS); /*msl*/
    }
    else {

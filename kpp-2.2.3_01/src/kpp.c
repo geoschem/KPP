@@ -330,8 +330,14 @@ int dummyNr;
 		     break;
       case DUMMY_SPC:dummy[ dummyNr++ ] = Code[ i ]; 
 		     break;
-      case PL_SPC:   PrLo[ plNr++ ]     = Code[ i ]; 
-		     break;
+    }
+  }
+
+  /*msl*/
+  if (doFlux == 1) { /* determine number of PL species and map their index to CODE */
+    for( i = 0; i < VarNr; i++ ) {
+      /* index mapping */
+      if ( SpeciesTable[ Code[i] ].flux ) SpeciesTable[ Code[i] ].flux = Index(plNr++);
     }
   }
 
@@ -365,7 +371,7 @@ int dummyNr;
     if( Reactive[ k ] ) VarActiveNr++; 
     k++;
   }
-  for( i = 0; i < plNr; i++ ) {
+  /*  for( i = 0; i < plNr; i++ ) {
     new = ReverseCode[ PrLo[i] ];
     EqCopy( tmpStoich_Left[ new ], Stoich_Left[ k ] );
     EqCopy( tmpStoich_Right[ new ], Stoich_Right[ k ] );
@@ -373,7 +379,7 @@ int dummyNr;
     Code[ k ] = tmpCode[ new ];
     Reactive[ k ] = tmpReact[ new ];
     k++;
-  }
+    }*/
   for( i = 0; i < FixNr; i++ ) {
     new = ReverseCode[ fix[i] ];
     EqCopy( tmpStoich_Left[ new ], Stoich_Left[ k ] );

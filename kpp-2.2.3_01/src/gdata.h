@@ -36,8 +36,8 @@
 
 #include <stdio.h>
 
-#define MAX_EQN         600
-#define MAX_SPECIES     600
+#define MAX_EQN         800
+#define MAX_SPECIES     800
 #define MAX_SPNAME       30
 #define MAX_IVAL         40
 /* MAX_EQNTAG = max length of equation ID in eqn file */
@@ -95,6 +95,7 @@ typedef struct {
 		 char name[ MAX_SPNAME ];
                  char ival[ MAX_IVAL ];
                  ATOM atoms[ MAX_ATOMS ]; 
+                 int flux; /* msl_290416 */
 	       } SPECIES_DEF;
 
 typedef struct {

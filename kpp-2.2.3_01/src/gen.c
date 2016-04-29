@@ -74,6 +74,7 @@ int RTOLS, TSTART, TEND, DT;
 int ATOL, RTOL, STEPMIN, STEPMAX, CFACTOR;
 int V_USER, CL;
 int NMLCV, NMLCF, SCT, PROPENSITY, VOLUME, IRCT;
+int FLUX_MAP;
 
 int Jac_NZ, LU_Jac_NZ, nzr;
 
@@ -250,6 +251,8 @@ int i,j;
   EQN_NAMES  = DefvElm( "EQN_NAMES", DOUBLESTRING, -NREACT, "Equation names" );
   SPC_NAMES  = DefvElm( "SPC_NAMES", STRING, -NSPEC, "Names of chemical species" );
 
+  FLUX_MAP   = DefvElm( "FLUX_MAP", INT, -NREACT, "Map-to-SPEC indeces for FLUX species" );
+
   CFACTOR  = DefElm( "CFACTOR", real, "Conversion factor for concentration units");
 
   /* Elements of Stochastic simulation*/
@@ -382,6 +385,7 @@ char *smass[MAX_ATOMS];
 char *seqn[MAX_EQN];
 char *bufeqn, *p;
 int dim;
+int flxind[MAX_EQN];
 
 
   /* Allocate local data structures */
@@ -407,6 +411,18 @@ int dim;
       snames[i] = SpeciesTable[Code[i]].name;
   }  
   InitDeclare( SPC_NAMES, SpcNr, (void*)snames );
+
+  if (doFlux == 1) {
+    NewLines(1);
+    j = 0;
+    for (i = 0; i < SpcNr; i++) {
+      if ( SpeciesTable[ Code[i] ].flux ) {
+	flxind[j] = Index(i); 
+	j++;
+      }
+    }  
+    InitDeclare( FLUX_MAP, EqnNr, (void*)flxind );
+  }
 
   nlookat = 0;
   for (i = 0; i < SpcNr; i++)
@@ -668,7 +684,7 @@ int F_VAR, FSPLIT_VAR;
         sum = Add( sum, Mul( Const( Stoich[i][j] ), Elm( A, j ) ) );
       Assign( Elm( Vdot, i ), sum );
     }    
-    for (i = VarNr; i < VarNr+plNr; i++) {
+    for (i = VarNr; i < VarNr; i++) {
       sum = Const(0);
       for (j = 0; j < EqnNr; j++) 
         sum = Add( sum, Mul( Const( Stoich[i][j] ), Elm( A, j ) ) );
@@ -2232,8 +2248,8 @@ int j,dummy_species;
   
   NewLines(1);
   DeclareConstant( NSPEC,   ascii( max(SpcNr, 1) ) );
-  DeclareConstant( NVAR,    ascii( max(VarNr+plNr, 1) ) );
-  DeclareConstant( NFLUX,   ascii( max(plNr,  1)  ) );
+  DeclareConstant( NVAR,    ascii( max(VarNr, 1) ) );
+  DeclareConstant( NFLUX,   ascii( max(plNr+1,  1)  ) );
   DeclareConstant( NVARACT, ascii( max(VarActiveNr, 1) ) );
   DeclareConstant( NFIX,    ascii( max(FixNr, 1) ) );
   DeclareConstant( NREACT,  ascii( max(EqnNr, 1) ) );
@@ -2266,8 +2282,8 @@ int j,dummy_species;
     FreeVariable( spc );
   }
  
-  if (doFlux == 1) {
-  NewLines(1);
+  /*if (doFlux == 1) {
+    NewLines(1);
   WriteComment("Index declaration for flux accumulation species in C");
   WriteComment("  C(ind_spc)");
   NewLines(1);
@@ -2276,15 +2292,15 @@ int j,dummy_species;
     spc = DefConst( name, INT, 0 );
     DeclareConstant( spc, ascii( Index(i+VarNr) ) );
     FreeVariable( spc );
-  }
-  }
+    }
+   }*/
 
   NewLines(1);
   WriteComment("Index declaration for fixed species in C");
   WriteComment("  C(ind_spc)");
   NewLines(1);
   for( i = 0; i < FixNr; i++) {
-    sprintf( name, "ind_%s", SpeciesTable[ Code[i + plNr + VarNr] ].name );
+    sprintf( name, "ind_%s", SpeciesTable[ Code[i + VarNr] ].name );
     spc = DefConst( name, INT, 0 );
     DeclareConstant( spc, ascii( Index(i+VarNr) ) );
     FreeVariable( spc );
@@ -2313,7 +2329,7 @@ int j,dummy_species;
   WriteComment("   FIX(indf_spc) = C(ind_spc) = C(NVAR+indf_spc)");
   NewLines(1);
   for( i = 0; i < FixNr; i++) {
-    sprintf( name, "indf_%s", SpeciesTable[ Code[i + plNr + VarNr] ].name );
+    sprintf( name, "indf_%s", SpeciesTable[ Code[i + VarNr] ].name );
     spc = DefConst( name, INT, 0 );
     DeclareConstant( spc, ascii( Index(i) ) );
     FreeVariable( spc );
