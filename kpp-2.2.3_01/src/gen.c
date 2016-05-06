@@ -45,16 +45,19 @@ int **LUstructJ;
 
 ICODE InlineCode[ INLINE_OPT ];
 
-int NSPEC, NVAR, NVARACT, NFIX, NREACT, NFLUX;
+int NSPEC, NVAR, NVARACT, NFIX, NREACT;
 int NVARST, NFIXST;
 /* int PI; */ 
 int C_DEFAULT, C;
 int DC;
 int ARP, JVRP, NJVRP, CROW_JVRP, IROW_JVRP, ICOL_JVRP;
-int V, F, VAR, FIX, FLUX;
+int V, F, VAR, FIX;
 int RCONST, RCT;
 int Vdot, P_VAR, D_VAR;
-int KR, A, BV, BR, IV, RR;
+/*  mz_rs_20160201+ */
+int StoichNum;
+/*  mz_rs_20160201- */
+int KR, A, BV, BR, IV;
 int JV, UV, JUV, JTUV, JVS; 
 int JR, UR, JUR, JRS;
 int U1, U2, HU, HTU;
@@ -70,11 +73,10 @@ int SPC_NAMES, EQN_NAMES;
 int EQN_TAGS; 
 int NONZERO, LU_NONZERO;
 int TIME, SUN, TEMP;
-int RTOLS, TSTART, TEND, DT;
+int TSTART, TEND, DT;
 int ATOL, RTOL, STEPMIN, STEPMAX, CFACTOR;
 int V_USER, CL;
 int NMLCV, NMLCF, SCT, PROPENSITY, VOLUME, IRCT;
-int FLUX_MAP;
 
 int Jac_NZ, LU_Jac_NZ, nzr;
 
@@ -132,7 +134,6 @@ int i,j;
 
   NSPEC   = DefConst( "NSPEC",   INT, "Number of chemical species" );
   NVAR    = DefConst( "NVAR",    INT, "Number of Variable species" );
-  NFLUX   = DefConst( "NFLUX",   INT, "Number of Reaction Flux species" );
   NVARACT = DefConst( "NVARACT", INT, "Number of Active species" );
   NFIX    = DefConst( "NFIX",    INT, "Number of Fixed species" );
   NREACT  = DefConst( "NREACT",  INT, "Number of reactions" );
@@ -147,7 +148,6 @@ int i,j;
 
   VAR = DefvElm( "VAR", real, -NVAR, "Concentrations of variable species (global)" );
   FIX = DefvElm( "FIX", real, -NFIX, "Concentrations of fixed species (global)" );
-  FLUX = DefvElm( "FLUX", real, -NFLUX, "Captured flux through reactions (global)" );
 
   V = DefvElm( "V", real, -NVAR, "Concentrations of variable species (local)" );
   F = DefvElm( "F", real, -NFIX, "Concentrations of fixed species (local)" );
@@ -160,6 +160,9 @@ int i,j;
   Vdot = DefvElm( "Vdot", real, -NVAR, "Time derivative of variable species concentrations" );
   P_VAR = DefvElm( "P_VAR", real, -NVAR, "Production term" );
   D_VAR = DefvElm( "D_VAR", real, -NVAR, "Destruction term" );
+  /*  mz_rs_20160201+ */
+  StoichNum = DefmElm( "StoichNum", real, -NVAR, -NREACT, "Stoichiometric numbers" );
+  /*  mz_rs_20160201- */
 
 
   JVS   = DefvElm( "JVS", real, -LU_NONZERO, "sparse Jacobian of variables" );
@@ -177,13 +180,11 @@ int i,j;
   SUN   = DefElm( "SUN", real, "Sunlight intensity between [0,1]");
   TEMP  = DefElm( "TEMP", real, "Temperature");
   
-  RTOLS  = DefElm( "RTOLS", real, "(scalar) Relative tolerance");
   TSTART = DefElm( "TSTART", real, "Integration start time");
   TEND   = DefElm( "TEND", real, "Integration end time");
   DT     = DefElm( "DT", real, "Integration step");
   
   A  = DefvElm( "A", real, -NREACT, "Rate for each equation" );
-  RR = DefvElm( "RR", real, -NREACT, "Flux for each equation" );
 
   ARP  = DefvElm( "ARP", real, -NREACT, "Reactant product in each equation" );
   NJVRP    = DefConst( "NJVRP",   INT, "Length of sparse Jacobian JVRP" );
@@ -250,8 +251,6 @@ int i,j;
   EQN_TAGS    = DefvElm( "EQN_TAGS", STRING, -NREACT, "Equation tags" );
   EQN_NAMES  = DefvElm( "EQN_NAMES", DOUBLESTRING, -NREACT, "Equation names" );
   SPC_NAMES  = DefvElm( "SPC_NAMES", STRING, -NSPEC, "Names of chemical species" );
-
-  FLUX_MAP   = DefvElm( "FLUX_MAP", INT, -NREACT, "Map-to-SPEC indeces for FLUX species" );
 
   CFACTOR  = DefElm( "CFACTOR", real, "Conversion factor for concentration units");
 
@@ -342,7 +341,6 @@ int dim;
   GlobalDeclare( TIME );
   GlobalDeclare( SUN );
   GlobalDeclare( TEMP );
-  GlobalDeclare( RTOLS );
   GlobalDeclare( TSTART );
   GlobalDeclare( TEND );
   GlobalDeclare( DT );
@@ -385,13 +383,14 @@ char *smass[MAX_ATOMS];
 char *seqn[MAX_EQN];
 char *bufeqn, *p;
 int dim;
-int flxind[MAX_EQN];
 
 
   /* Allocate local data structures */
   dim    = SpcNr+2;
-  crow   = AllocIntegerVector( dim, "crow in GenerateMonitorData");
-  diag   = AllocIntegerVector( dim, "diag in GenerateMonitorData");
+  /*  mz_rs_20070126+ not used, therefore deleted */
+  /*  crow   = AllocIntegerVector( dim, "crow in GenerateMonitorData"); */
+  /*  diag   = AllocIntegerVector( dim, "diag in GenerateMonitorData"); */
+  /*  mz_rs_20070126- */
   lookat = AllocIntegerVector( dim, "lookat in GenerateMonitorData"); 
   moni   = AllocIntegerVector( dim, "moni in GenerateMonitorData");
   trans  = AllocIntegerVector( dim, "trans in GenerateMonitorData");
@@ -411,18 +410,6 @@ int flxind[MAX_EQN];
       snames[i] = SpeciesTable[Code[i]].name;
   }  
   InitDeclare( SPC_NAMES, SpcNr, (void*)snames );
-
-  if (doFlux == 1) {
-    NewLines(1);
-    j = 0;
-    for (i = 0; i < SpcNr; i++) {
-      if ( SpeciesTable[ Code[i] ].flux ) {
-	flxind[j] = Index(i); 
-	j++;
-      }
-    }  
-    InitDeclare( FLUX_MAP, EqnNr, (void*)flxind );
-  }
 
   nlookat = 0;
   for (i = 0; i < SpcNr; i++)
@@ -514,7 +501,10 @@ int flxind[MAX_EQN];
   F77_Inline( "%6sEND\n\n", " " );
 
   /* Free local data structures */
-  free(crow); free(diag); free(lookat); free(moni); free(trans);
+  /* mz_rs_20070126+ not used, therefore deleted */
+  /* free(crow); free(diag); */
+  /* mz_rs_20070126- */
+  free(lookat); free(moni); free(trans);
 
 }
 
@@ -610,6 +600,96 @@ void GenerateJacobianSparseHeader()
 }
 
 
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*  mz_rs_20160201+ */
+void GenerateStoichNum()
+{
+  int i, j, k;
+  int l, m;
+  int CalcStoichNum;
+
+  if( VarNr == 0 ) return;
+  if (useLang != MATLAB_LANG)  /* Matlab generates an additional file per function */
+    UseFile( functionFile ); 
+  CalcStoichNum = DefFnc( "CalcStoichNum", 1, "calculate stoichiometric numbers");
+  FunctionBegin( CalcStoichNum, StoichNum );
+  F90_Inline("  StoichNum(:,:) = 0.");
+  for (i = 0; i < VarNr; i++) {
+    for (j = 0; j < EqnNr; j++) {
+      if ( Stoich[i][j] != 0 )
+        Assign( Elm( StoichNum, i, j ), Const( Stoich[i][j] ));
+    }
+  }
+  FunctionEnd( CalcStoichNum );
+  FreeVariable( CalcStoichNum );
+}
+/*  mz_rs_20160201- */
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*mz_dt_20150424+ */
+void GenerateFun_Split()
+{
+  int i, j, k;
+  int used;
+  int l, m;
+  int FSPLIT_VAR;
+
+  if( VarNr == 0 ) return;  
+  if (useLang != MATLAB_LANG)  /* Matlab generates an additional file per function */
+    UseFile( functionFile ); 
+  FSPLIT_VAR = DefFnc( "Fun_SPLIT", 5, "time derivatives of variables - Split form");
+  FunctionBegin( FSPLIT_VAR, V, F, RCT, P_VAR, D_VAR );
+  NewLines(1);
+  WriteComment("Computation of equation rates");
+  for(j=0; j<EqnNr; j++) {
+    used = 0;
+    for (i = 0; i < VarNr; i++) 
+      if ( Stoich_Right[i][j] != 0 ) { 
+        used = 1;
+        break;
+      }
+    if ( used ) {    
+      prod = RConst( j );
+      for (i = 0; i < VarNr; i++) 
+        for (k = 1; k <= (int)Stoich_Left[i][j]; k++ )
+          prod = Mul( prod, Elm( V, i ) ); 
+      for ( ; i < SpcNr; i++) 
+        for (k = 1; k <= (int)Stoich_Left[i][j]; k++ )
+          prod = Mul( prod, Elm( F, i - VarNr ) );
+      Assign( Elm( A, j ), prod );
+    }
+  }
+  NewLines(1);
+  WriteComment("Production function");
+  for (i = 0; i < VarNr; i++) {
+    sum = Const(0);
+    for (j = 0; j < EqnNr; j++) 
+      sum = Add( sum, Mul( Const( Stoich_Right[i][j] ), Elm( A, j ) ) );
+    Assign( Elm( P_VAR, i ), sum );
+  }
+  NewLines(1);
+  WriteComment("Destruction function");
+  for (i = 0; i < VarNr; i++) {
+    sum = Const(0);       
+    for(j=0; j<EqnNr; j++) {
+      if ( Stoich_Left[i][j] == 0 ) continue;
+      prod = Mul( RConst( j ), Const( Stoich_Left[i][j] ) );
+      for (l = 0; l < VarNr; l++) {
+        m=(int)Stoich_Left[l][j] - (l==i);
+        for (k = 1; k <= m; k++ )
+          prod = Mul( prod, Elm( V, l ) );
+      }     
+      for ( ; l < SpcNr; l++) 
+        for (k = 1; k <= (int)Stoich_Left[l][j]; k++ )
+          prod = Mul( prod, Elm( F, l - VarNr  ) ); 
+      sum = Add( sum, prod );
+    }
+    Assign( Elm( D_VAR, i ), sum );
+  }
+  FunctionEnd( FSPLIT_VAR );
+  FreeVariable( FSPLIT_VAR );
+}
+/*mz_dt_20150424- */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 void GenerateFun()
@@ -640,7 +720,6 @@ int F_VAR, FSPLIT_VAR;
     NewLines(1);
     WriteComment("Local variables");
     Declare( A );
-    WriteOMPThreadPrivate("A");
   }  
   NewLines(1);
   WriteComment("Computation of equation rates");
@@ -684,12 +763,6 @@ int F_VAR, FSPLIT_VAR;
         sum = Add( sum, Mul( Const( Stoich[i][j] ), Elm( A, j ) ) );
       Assign( Elm( Vdot, i ), sum );
     }    
-    for (i = VarNr; i < VarNr; i++) {
-      sum = Const(0);
-      for (j = 0; j < EqnNr; j++) 
-        sum = Add( sum, Mul( Const( Stoich[i][j] ), Elm( A, j ) ) );
-      Assign( Elm( Vdot, i ), sum );
-    }    
 
   } else {
     
@@ -705,15 +778,6 @@ int F_VAR, FSPLIT_VAR;
     
     NewLines(1);
     WriteComment("Destruction function");
-
-    /* msl_20160421
-    for (i = 0; i < VarNr; i++) {
-      sum = Const(0);
-      for (j = 0; j < EqnNr; j++) 
-        sum = Add( sum, Mul( Const( Stoich_Left[i][j] ), Elm( A, j ) ) );
-      Assign( Elm( D_VAR, i ), sum );
-    }
-    */
 
     for (i = 0; i < VarNr; i++) {
       sum = Const(0);       
@@ -746,58 +810,6 @@ int F_VAR, FSPLIT_VAR;
   
   FreeVariable( F_VAR );
   FreeVariable( FSPLIT_VAR );
-}
-
-
-
-
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void GenerateFlux()
-{
-int i, j, k;
-int used;
-int l, m;
-int FLUX_VAR;
-
-  if( VarNr == 0 ) return;
-  
-  /*  if (useLang != MATLAB_LANG)  /* Matlab generates an additional file per function */
-  /*     UseFile( functionFile ); */
-
-  FLUX_VAR = DefFnc( "Flux", 3, "calculate production & loss terms from reaction flux");
-
-  FunctionBegin( FLUX_VAR, RR, P_VAR, D_VAR );
-
-  /*if ( (useLang==MATLAB_LANG)&&(!useAggregate) )
-    printf("\nWarning: in the flux definition move P_VAR to output vars\n");*/
-
-  NewLines(1);
-  WriteComment("Production function");
-  
-  for (i = 0; i < VarNr; i++) {
-    sum = Const(0);
-    for (j = 0; j < EqnNr; j++) 
-      sum = Add( sum, Mul( Const( Stoich_Right[i][j] ), Elm( RR, j ) ) );
-    Assign( Elm( P_VAR, i ), sum );
-  }
-  
-  NewLines(1);
-  WriteComment("Destruction function");
-  
-  /* msl_20160421 */
-  for (i = 0; i < VarNr; i++) {
-    sum = Const(0);
-    for (j = 0; j < EqnNr; j++) 
-      sum = Add( sum, Mul( Const( Stoich_Left[i][j] ), Elm( RR, j ) ) );
-    Assign( Elm( D_VAR, i ), sum );
-  }
-
-  
-  /*MATLAB_Inline("\n   P_VAR = P_VAR(:);\n   D_VAR = D_VAR(:);\n");*/
-
-  FunctionEnd( FLUX_VAR );
-  FreeVariable( FLUX_VAR );
 }
 
 
@@ -2249,7 +2261,6 @@ int j,dummy_species;
   NewLines(1);
   DeclareConstant( NSPEC,   ascii( max(SpcNr, 1) ) );
   DeclareConstant( NVAR,    ascii( max(VarNr, 1) ) );
-  DeclareConstant( NFLUX,   ascii( max(plNr+1,  1)  ) );
   DeclareConstant( NVARACT, ascii( max(VarActiveNr, 1) ) );
   DeclareConstant( NFIX,    ascii( max(FixNr, 1) ) );
   DeclareConstant( NREACT,  ascii( max(EqnNr, 1) ) );
@@ -2282,19 +2293,6 @@ int j,dummy_species;
     FreeVariable( spc );
   }
  
-  /*if (doFlux == 1) {
-    NewLines(1);
-  WriteComment("Index declaration for flux accumulation species in C");
-  WriteComment("  C(ind_spc)");
-  NewLines(1);
-  for( i = 0; i < plNr; i++) {
-    sprintf( name, "ind_%s", SpeciesTable[ Code[i + VarNr] ].name );
-    spc = DefConst( name, INT, 0 );
-    DeclareConstant( spc, ascii( Index(i+VarNr) ) );
-    FreeVariable( spc );
-    }
-   }*/
-
   NewLines(1);
   WriteComment("Index declaration for fixed species in C");
   WriteComment("  C(ind_spc)");
@@ -2364,10 +2362,10 @@ int mxyz;
    Declare( VAR );
    Declare( FIX );
    WriteComment("VAR, FIX are chunks of array C");
-   F77_Inline("!      EQUIVALENCE( %s(%d),%s(1) )", 
+   F77_Inline("      EQUIVALENCE( %s(%d),%s(1) )", 
             varTable[C]->name, 1, varTable[VAR]->name );
    if ( FixNr > 0 ) { /*  mz_rs_20050121 */
-     F77_Inline("!      EQUIVALENCE( %s(%d),%s(1) )", 
+     F77_Inline("      EQUIVALENCE( %s(%d),%s(1) )", 
        varTable[C]->name, VarNr+1, varTable[FIX]->name );
    }
   }
@@ -2376,10 +2374,10 @@ int mxyz;
      ExternDeclare( VAR );
      ExternDeclare( FIX );
      WriteComment("VAR, FIX are chunks of array C");
-     F90_Inline("!      EQUIVALENCE( %s(%d),%s(1) )", 
+     F90_Inline("      EQUIVALENCE( %s(%d),%s(1) )", 
             varTable[C]->name, 1, varTable[VAR]->name );
      if ( FixNr > 0 ) { /*  mz_rs_20050121 */
-       F90_Inline("!      EQUIVALENCE( %s(%d),%s(1) )", 
+       F90_Inline("      EQUIVALENCE( %s(%d),%s(1) )", 
          varTable[C]->name, VarNr+1, varTable[FIX]->name );
      }
   }
@@ -2397,7 +2395,6 @@ int mxyz;
   ExternDeclare( TIME );
   ExternDeclare( SUN );
   ExternDeclare( TEMP );
-  ExternDeclare( RTOLS );
   ExternDeclare( TSTART );
   ExternDeclare( TEND );
   ExternDeclare( DT );
@@ -2621,6 +2618,11 @@ int INITVAL;
   F77_Inline("      INCLUDE '%s_Global.h'", rootFileName);
   F90_Inline("  USE %s_Global\n", rootFileName);
   MATLAB_Inline("global CFACTOR VAR FIX NVAR NFIX", rootFileName);
+
+  /*  mz_rs_20151116+ */
+  F77_Inline("      INCLUDE '%s_Parameters.h'", rootFileName);
+  F90_Inline("  USE %s_Parameters\n", rootFileName);
+  /*  mz_rs_20151116- */
   
   I = DefElm( "i", INT, 0);
   X = DefElm( "x", real, 0);
@@ -2966,7 +2968,10 @@ case 'h':
   F90_Inline("! KPP SP - Single precision kind");
   F90_Inline("  INTEGER, PARAMETER :: sp = SELECTED_REAL_KIND(6,30)");
   F90_Inline("! KPP DP - Double precision kind");
-  F90_Inline("  INTEGER, PARAMETER :: dp = SELECTED_REAL_KIND(14,300)");
+  /*  mz_rs_20060308+ */
+  /* F90_Inline("  INTEGER, PARAMETER :: dp = SELECTED_REAL_KIND(14,300)"); */
+  F90_Inline("  INTEGER, PARAMETER :: dp = SELECTED_REAL_KIND(12,307)");
+  /*  mz_rs_20060308- */
   F90_Inline("! KPP QP - Quadruple precision kind");
   F90_Inline("  INTEGER, PARAMETER :: qp = SELECTED_REAL_KIND(18,400)");
   F90_Inline("\nEND MODULE %s_Precision\n\n", rootFileName );
@@ -2998,7 +3003,6 @@ case 'h':
       F90_Inline("  USE %s_Parameters", rootFileName );
     F90_Inline("  IMPLICIT NONE\n", rootFileName );
     Declare( A ); /*  mz_rs_20050117 */
-    WriteOMPThreadPrivate(" A "); /* msl_20160419 */
     F90_Inline("\nCONTAINS\n\n");
 
   UseFile( rateFile );
@@ -3196,7 +3200,7 @@ case 't':
   break;
   
 default:
-  printf("\n Unrecognized option '%s' in GenerateF90Modules\n", where);
+  printf("\n Unrecognized option '%c' in GenerateF90Modules\n", where);
   break;
 }  
 }
@@ -3230,7 +3234,7 @@ int n;
                  break; 
     case MATLAB_LANG: Use_MATLAB( rootFileName ); 
                  break; 
-    default: printf("\n Language no '%s' unknown\n",useLang );		 
+    default: printf("\n Language no '%d' unknown\n",useLang );		 
   }
   printf("\nKPP is initializing the code generation.");
   InitGen();
@@ -3256,15 +3260,15 @@ int n;
   GenerateGData();
   
 
-  if ( doFlux == 1 ) {
-    printf("\nKPP is generating the ODE function with flux enabled:");
-  }
-  else {
-    printf("\nKPP is generating the ODE function:");
-  }
+  printf("\nKPP is generating the ODE function:");
   printf("\n    - %s_Function",rootFileName);
-  GenerateFun();
-  if (doFlux == 1) GenerateFlux();  
+  GenerateFun();  
+  /*mz_dt_20150424+*/
+  GenerateFun_Split();  
+  /*mz_dt_20150424-*/
+  /*  mz_rs_20160201+ */
+  GenerateStoichNum();  
+  /*  mz_rs_20160201- */
 
   if ( useStochastic ) {
     printf("\nKPP is generating the Stochastic description:");

@@ -278,7 +278,6 @@ void ReorderSpecies( int criteria )
 CODE *var;
 CODE *fix;
 CODE *dummy;
-CODE *PrLo;
 EQ_VECT *tmpStoich_Left;
 EQ_VECT *tmpStoich_Right;
 EQ_VECT *tmpStoich;
@@ -306,16 +305,14 @@ int dummyNr;
                    break;  
   }
 
-  VarNr       = 0;
+  VarNr = 0;
   VarActiveNr = 0;
-  FixNr       = 0;
-  dummyNr     = 0;
-  plNr        = 0;
+  FixNr = 0;
+  dummyNr = 0;
 
   var = (CODE*)malloc( SpcNr * sizeof(CODE) );
   fix = (CODE*)malloc( SpcNr * sizeof(CODE) );
   dummy = (CODE*)malloc( 5 * sizeof(CODE) );
-  PrLo  = (CODE*)malloc( EqnNr * sizeof(CODE) );
   tmpStoich_Left = (EQ_VECT*)malloc( SpcNr * sizeof(EQ_VECT) );
   tmpStoich_Right = (EQ_VECT*)malloc( SpcNr * sizeof(EQ_VECT) );
   tmpStoich = (EQ_VECT*)malloc( SpcNr * sizeof(EQ_VECT) );
@@ -330,14 +327,6 @@ int dummyNr;
 		     break;
       case DUMMY_SPC:dummy[ dummyNr++ ] = Code[ i ]; 
 		     break;
-    }
-  }
-
-  /*msl*/
-  if (doFlux == 1) { /* determine number of PL species and map their index to CODE */
-    for( i = 0; i < VarNr; i++ ) {
-      /* index mapping */
-      if ( SpeciesTable[ Code[i] ].flux ) SpeciesTable[ Code[i] ].flux = Index(plNr++);
     }
   }
 
@@ -371,15 +360,6 @@ int dummyNr;
     if( Reactive[ k ] ) VarActiveNr++; 
     k++;
   }
-  /*  for( i = 0; i < plNr; i++ ) {
-    new = ReverseCode[ PrLo[i] ];
-    EqCopy( tmpStoich_Left[ new ], Stoich_Left[ k ] );
-    EqCopy( tmpStoich_Right[ new ], Stoich_Right[ k ] );
-    EqCopy( tmpStoich[ new ], Stoich[ k ] );
-    Code[ k ] = tmpCode[ new ];
-    Reactive[ k ] = tmpReact[ new ];
-    k++;
-    }*/
   for( i = 0; i < FixNr; i++ ) {
     new = ReverseCode[ fix[i] ];
     EqCopy( tmpStoich_Left[ new ], Stoich_Left[ k ] );
@@ -574,6 +554,7 @@ int i,j;
   ComputeLUStructJ();
 
   if( initNr == -1 ) initNr = VarNr;
+
 
   printf("\nKPP is starting the code generation.");
   Generate( rootFileName );

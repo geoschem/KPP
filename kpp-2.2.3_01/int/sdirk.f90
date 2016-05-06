@@ -31,6 +31,19 @@ MODULE KPP_ROOT_Integrator
            Nrej=5, Ndec=6, Nsol=7, Nsng=8,               &
            Ntexit=1, Nhexit=2, Nhnew=3
                  
+  ! description of the error numbers IERR
+  CHARACTER(LEN=50), PARAMETER, DIMENSION(-8:1) :: IERR_NAMES = (/ &
+    'Matrix is repeatedly singular                     ', & ! -8
+    'Step size too small: T + 10*H = T or H < Roundoff ', & ! -7
+    'No of steps exceeds maximum bound                 ', & ! -6
+    'Improper tolerance values                         ', & ! -5
+    'FacMin/FacMax/FacRej must be positive             ', & ! -4
+    'Hmin/Hmax/Hstart must be positive                 ', & ! -3
+    'Improper value for maximal no of Newton iterations', & ! -2
+    'Improper value for maximal no of steps            ', & ! -1
+    '                                                  ', & !  0 (not used)
+    'Success                                           ' /) !  1
+
 CONTAINS
 
 SUBROUTINE INTEGRATE( TIN, TOUT, &
@@ -58,9 +71,6 @@ SUBROUTINE INTEGRATE( TIN, TOUT, &
    ISTATUS(:) = 0
    RSTATUS(:) = 0.0_dp
 
-   !~~~> fine-tune the integrator:
-   ICNTRL(2) = 0	! 0 - vector tolerances, 1 - scalar tolerances
-   ICNTRL(6) = 0	! starting values of Newton iterations: interpolated (0), zero (1)
   ! If optional parameters are given, and if they are >0, 
    ! then they overwrite default settings. 
    IF (PRESENT(ICNTRL_U)) THEN
@@ -507,9 +517,9 @@ stages:DO istage = 1, rkS
                ! Gj(:) = sum_j Theta(i,j)*Zj(:) = H * sum_j A(i,j)*Fun(Zj)
                CALL WAXPY(N,rkTheta(istage,j),Z(1,j),1,G,1)
                ! Zi(:) = sum_j Alpha(i,j)*Zj(:)
-	       IF (StartNewton) THEN
+               IF (StartNewton) THEN
                   CALL WAXPY(N,rkAlpha(istage,j),Z(1,j),1,Z(1,istage),1)
-	       END IF
+               END IF
            END DO
        END IF
 
@@ -520,12 +530,12 @@ stages:DO istage = 1, rkS
 NewtonLoop:DO NewtonIter = 1, NewtonMaxit
 
 !~~~>   Prepare the loop-dependent part of the right-hand side
- 	    CALL WADD(N,Y,Z(1,istage),TMP)         	! TMP <- Y + Zi
-            CALL FUN_CHEM(T+rkC(istage)*H,TMP,RHS)	! RHS <- Fun(Y+Zi)
+            CALL WADD(N,Y,Z(1,istage),TMP)              ! TMP <- Y + Zi
+            CALL FUN_CHEM(T+rkC(istage)*H,TMP,RHS)      ! RHS <- Fun(Y+Zi)
             ISTATUS(Nfun) = ISTATUS(Nfun) + 1
 !            RHS(1:N) = G(1:N) - Z(1:N,istage) + (H*rkGamma)*RHS(1:N)
-	    CALL WSCAL(N, H*rkGamma, RHS, 1)
-	    CALL WAXPY (N, -ONE, Z(1,istage), 1, RHS, 1)
+            CALL WSCAL(N, H*rkGamma, RHS, 1)
+            CALL WAXPY (N, -ONE, Z(1,istage), 1, RHS, 1)
             CALL WAXPY (N, ONE, G,1, RHS,1)
 
 !~~~>   Solve the linear system
@@ -632,7 +642,7 @@ accept: IF ( Err < ONE ) THEN !~~~> Step is accepted
          ! If convergence is fast enough, do not update Jacobian
 !         SkipJac = (Theta <= ThetaMin)
          SkipJac = .FALSE.
-	 
+         
       ELSE accept !~~~> Step is rejected
 
          IF (FirstStep .OR. Reject) THEN
@@ -1217,7 +1227,6 @@ Hloop: DO WHILE (ISING /= 0)
 
       USE KPP_ROOT_Parameters, ONLY: NVAR, LU_NONZERO
       USE KPP_ROOT_Global, ONLY: FIX, RCONST, TIME
-      USE KPP_ROOT_Jacobian
       USE KPP_ROOT_Jacobian, ONLY: Jac_SP
       USE KPP_ROOT_Rates, ONLY: Update_SUN, Update_RCONST, Update_PHOTO
       IMPLICIT NONE

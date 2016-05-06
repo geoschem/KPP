@@ -29,21 +29,35 @@
 
 ******************************************************************************/
 
-#define KPP_VERSION "2.2.4_gc"
+#define KPP_VERSION "2.2.3_rs"
 
 #ifndef _GDATA_H_
 #define _GDATA_H_
 
 #include <stdio.h>
 
-#define MAX_EQN         800
-#define MAX_SPECIES     800
+/* mz_rs_20100222+ */
+/* Some hints: */
+/* - Many limits can be changed here by adjusting the MAX_* constants */
+/* - To increase the max size of inlined code (F90_GLOBAL etc.), */
+/*   change MAX_INLINE in scan.h */
+/* - To allow longer f90 expressions for the rate coefficients in the
+     eqn file, change consistently:
+     - crtToken, nextToken, crtFile, and crt_rate in scan.l
+     - MAX_K in this file
+     - union in scan.y
+     Note that MAX_EQNLEN only determines how long the printout of the
+     equation in the Monitor file will be. */
+/* mz_rs_20100222- */
+
+#define MAX_EQN       11000 /* mz_rs_20070124 */
+#define MAX_SPECIES    3500 /* mz_ak_20060206 */
 #define MAX_SPNAME       30
 #define MAX_IVAL         40
 /* MAX_EQNTAG = max length of equation ID in eqn file */
-#define MAX_EQNTAG       12
-/* MAX_K = max length of rate expression in eqn file */
-#define MAX_K           150
+#define MAX_EQNTAG       32 /*  mz_pj_20080716 */
+/* check if changes in code_f90.c are also necessary when changing MAX_EQNTAG */
+#define MAX_K           300 /* mz_rs_20070430 */
 #define MAX_ATOMS	 10
 #define MAX_ATNAME	 10
 #define MAX_ATNR	250 
@@ -95,7 +109,6 @@ typedef struct {
 		 char name[ MAX_SPNAME ];
                  char ival[ MAX_IVAL ];
                  ATOM atoms[ MAX_ATOMS ]; 
-                 int flux; /* msl_290416 */
 	       } SPECIES_DEF;
 
 typedef struct {
@@ -120,7 +133,6 @@ extern int AtomNr;
 extern int VarNr;
 extern int VarActiveNr;
 extern int FixNr;
-extern int plNr; 
 extern int VarStartNr;
 extern int FixStartNr;
 extern int Hess_NZ;
@@ -148,7 +160,6 @@ extern int useDummyindex;
 extern int useEqntags;
 extern int useLang;
 extern int useStochastic;
-extern int doFlux;
 
 /* if useValues=1 KPP replaces parameters like NVAR etc. 
        by their values in vector/matrix declarations */
@@ -201,7 +212,6 @@ void CmdIntegrator( char *cmd );
 void CmdDriver( char *cmd );
 void CmdRun( char *cmd );
 void CmdStochastic( char *cmd );
-void CmdFlux( char *cmd );
 
 void Generate();
 

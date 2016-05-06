@@ -28,6 +28,19 @@ MODULE KPP_ROOT_Integrator
                         Nrej=5, Ndec=6, Nsol=7, Nsng=8, &
                         Ntexit=1, Nhexit=2, Nhnew = 3
 
+  ! description of the error numbers IERR
+  CHARACTER(LEN=50), PARAMETER, DIMENSION(-8:1) :: IERR_NAMES = (/ &
+    'Matrix is repeatedly singular                     ', & ! -8
+    'Step size too small                               ', & ! -7
+    'No of steps exceeds maximum bound                 ', & ! -6
+    'Improper tolerance values                         ', & ! -5
+    'FacMin/FacMax/FacRej must be positive             ', & ! -4
+    'Hmin/Hmax/Hstart must be positive                 ', & ! -3
+    'Selected Rosenbrock method not implemented        ', & ! -2
+    'Improper value for maximal no of steps            ', & ! -1
+    '                                                  ', & !  0 (not used)
+    'Success                                           ' /) !  1
+
 CONTAINS
 
 SUBROUTINE INTEGRATE( TIN, TOUT, &
@@ -53,10 +66,6 @@ SUBROUTINE INTEGRATE( TIN, TOUT, &
    RCNTRL(:)  = 0.0_dp
    ISTATUS(:) = 0
    RSTATUS(:) = 0.0_dp
-
-    !~~~> fine-tune the integrator:
-   ICNTRL(1) = 0	! 0 - non-autonomous, 1 - autonomous
-   ICNTRL(2) = 0	! 0 - vector tolerances, 1 - scalars
 
    ! If optional parameters are given, and if they are >0, 
    ! then they overwrite default settings. 
