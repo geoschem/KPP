@@ -57,16 +57,16 @@
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       SUBROUTINE Rosenbrock(Y,Tstart,Tend,
      &            AbsTol,RelTol,
-     &            ode_Fun,ode_Jac ,
+     &            FunTemplate,JacTemplate ,
      &            RPAR,IPAR,IERR)
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 !      
 !    Solves the system y'=F(t,y) using a Rosenbrock method defined by:
 !
-!     G = 1/(H*gamma(1)) - ode_Jac(t0,Y0)
+!     G = 1/(H*gamma(1)) - JacTemplate(t0,Y0)
 !     T_i = t0 + Alpha(i)*H
 !     Y_i = Y0 + \sum_{j=1}^{i-1} A(i,j)*K_j
-!     G * K_i = ode_Fun( T_i, Y_i ) + \sum_{j=1}^S C(i,j)/H * K_j +
+!     G * K_i = FunTemplate( T_i, Y_i ) + \sum_{j=1}^S C(i,j)/H * K_j +
 !                  gamma(i)*dF/dT(t0, Y0)
 !     Y1 = Y0 + \sum_{j=1}^S M(j)*K_j 
 !
@@ -88,9 +88,9 @@
 !-    [Tstart,Tend]  = time range of integration
 !        (if Tstart>Tend the integration is performed backwards in time)  
 !-    RelTol, AbsTol = user precribed accuracy
-!-    SUBROUTINE ode_Fun( T, Y, Ydot ) = ODE function, 
+!-    SUBROUTINE FunTemplate( T, Y, Ydot ) = ODE function, 
 !                                         returns Ydot = Y' = F(T,Y) 
-!-    SUBROUTINE ode_Fun( T, Y, Ydot ) = Jacobian of the ODE function,
+!-    SUBROUTINE JacTemplate( T, Y, Ydot ) = Jacobian of the ODE function,
 !                                         returns Jcb = dF/dY 
 !-    IPAR(1:10)    = integer inputs parameters
 !-    RPAR(1:10)    = real inputs parameters
@@ -202,7 +202,7 @@
       PARAMETER (ONE  = 1.0d0)
       PARAMETER (DeltaMin = 1.0d-5)
 !~~~>   Functions
-      EXTERNAL ode_Fun, ode_Jac
+      EXTERNAL FunTemplate, JacTemplate
       KPP_REAL WLAMCH, ros_ErrorNorm
       EXTERNAL WLAMCH, ros_ErrorNorm
 
@@ -361,7 +361,7 @@
 !~~~>  CALL Rosenbrock method   
       CALL RosenbrockIntegrator(Y,Tstart,Tend,Texit,
      &      AbsTol,RelTol,
-     &      ode_Fun,ode_Jac ,
+     &      FunTemplate,JacTemplate ,
 !  Rosenbrock method coefficients     
      &      ros_S, ros_M, ros_E, ros_A, ros_C, 
      &      ros_Alpha, ros_Gamma, ros_ELO, ros_NewF,
@@ -393,7 +393,7 @@
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       SUBROUTINE RosenbrockIntegrator(Y,Tstart,Tend,T,
      &      AbsTol,RelTol,
-     &      ode_Fun,ode_Jac ,
+     &      FunTemplate,JacTemplate ,
 !~~~> Rosenbrock method coefficients     
      &      ros_S, ros_M, ros_E, ros_A, ros_C, 
      &      ros_Alpha, ros_Gamma, ros_ELO, ros_NewF,
@@ -422,7 +422,7 @@
 !~~~> Input: tolerances            
       KPP_REAL  AbsTol(KPP_NVAR), RelTol(KPP_NVAR)
 !~~~> Input: ode function and its Jacobian            
-      EXTERNAL ode_Fun, ode_Jac
+      EXTERNAL FunTemplate, JacTemplate
 !~~~> Input: The Rosenbrock method parameters      
       INTEGER  ros_S
       KPP_REAL ros_M(ros_S), ros_E(ros_S) 
@@ -497,16 +497,16 @@
       H = MIN(H,ABS(Tend-T))
 
 !~~~>   Compute the function at current time
-      CALL ode_Fun(T,Y,Fcn0)
+      CALL FunTemplate(T,Y,Fcn0)
 
 !~~~>  Compute the function derivative with respect to T
       IF (.NOT.Autonomous) THEN
          CALL ros_FunTimeDerivative ( T, Roundoff, Y, 
-     &                       Fcn0, ode_Fun, dFdT )
+     &                       Fcn0, FunTemplate, dFdT )
       END IF
   
 !~~~>   Compute the Jacobian at current time
-      CALL ode_Jac(T,Y,Jac0)
+      CALL JacTemplate(T,Y,Jac0)
  
 !~~~>  Repeat step calculation until current step accepted
       DO WHILE (.TRUE.) ! WHILE STEP NOT ACCEPTED
@@ -536,7 +536,7 @@
      &                   K(KPP_NVAR*(j-1)+1),1,Ynew,1) 
 	   END DO
 	   Tau = T + ros_Alpha(istage)*Direction*H
-           CALL ode_Fun(Tau,Ynew,Fcn)
+           CALL FunTemplate(Tau,Ynew,Fcn)
 	 END IF ! if istage.EQ.1 elseif ros_NewF(istage)
 	 CALL WCOPY(KPP_NVAR,Fcn,1,K(ioffset+1),1)
 	 DO j = 1, istage-1
@@ -645,7 +645,7 @@
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       SUBROUTINE ros_FunTimeDerivative ( T, Roundoff, Y, 
-     &                       Fcn0, ode_Fun, dFdT )
+     &                       Fcn0, FunTemplate, dFdT )
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 !~~~> The time partial derivative of the function by finite differences
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -654,7 +654,7 @@
 
 !~~~> Input arguments   
       KPP_REAL T, Roundoff, Y(KPP_NVAR), Fcn0(KPP_NVAR) 
-      EXTERNAL ode_Fun  
+      EXTERNAL FunTemplate  
 !~~~> Output arguments      
       KPP_REAL dFdT(KPP_NVAR)   
 !~~~> Global variables     
@@ -667,7 +667,7 @@
       PARAMETER ( ONE = 1.0d0 )
       
       Delta = SQRT(Roundoff)*MAX(DeltaMin,ABS(T))
-      CALL ode_Fun(T+Delta,Y,dFdT)
+      CALL FunTemplate(T+Delta,Y,dFdT)
       CALL WAXPY(KPP_NVAR,(-ONE),Fcn0,1,dFdT,1)
       CALL WSCAL(KPP_NVAR,(ONE/Delta),dFdT,1)
 

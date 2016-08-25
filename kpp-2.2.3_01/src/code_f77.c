@@ -383,7 +383,7 @@ char dsbuf[55];
     case VELM: if( n <= 0 ) break;
     	       for( i = 0; i < n; i++ ) {
                  switch( var->baseType ) {
-                   case INT: bprintf( "%3d",  ival[i] ); maxCols=12; break;
+                   case INT: bprintf( "%3d",  ival[i] ); maxCols=11; break;
                    case DOUBLE: 
                    case REAL:bprintf( "%5lg", dval[i] ); maxCols=8; break;
                    case STRING:bprintf( "'%s'", cval[i] ); maxCols=5; break;
@@ -391,7 +391,7 @@ char dsbuf[55];
 		        strncpy( dsbuf, cval[i], 54 ); dsbuf[54]='\0';
 		        bprintf( "'%48s'", dsbuf ); maxCols=1; break;
                  }
-                 if( ( (i+1) % 12 == 0 ) && ( nlines > MAX_LINES ) ) {
+                 if( ( (i+1) % 11 == 0 ) && ( nlines > MAX_LINES ) ) {
                      split = 1; nlines = 1;
                      WriteVecData( var, min, max, split );  
                      min = max + 1;
