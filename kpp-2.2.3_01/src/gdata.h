@@ -49,6 +49,8 @@
 #define MAX_ATNR	250 
 #define MAX_PATH        120
 #define MAX_FILES	 20
+#define MAX_FAMILIES	 50
+#define MAX_MEMBERS 	150
 #define MAX_EQNLEN      100
 
 #define NO_CODE 	-1
@@ -99,6 +101,23 @@ typedef struct {
 	       } SPECIES_DEF;
 
 typedef struct {
+                 char name[ MAX_SPNAME ];
+                 char ival[ MAX_IVAL ];
+                 int code;
+                 unsigned char nr;
+                 float coeff;
+                 char  coeff_str;
+               } MEMBER;
+
+typedef struct {
+		 char type;
+                 short int nrmembers;
+		 char name[ MAX_SPNAME ];
+                 char ival[ MAX_IVAL ];
+                 MEMBER members[ MAX_MEMBERS ]; 
+	       } FAMILY_DEF;
+
+typedef struct {
 		 char type;
 		 union {
 		   char st[ MAX_K ];
@@ -114,6 +133,7 @@ typedef struct {
 
 
 extern int SpeciesNr;
+extern int FamilyNr;
 extern int EqnNr;
 extern int SpcNr;
 extern int AtomNr;
@@ -164,13 +184,19 @@ extern char *rootFileName;
 
 extern ATOM_DEF AtomTable[ MAX_ATNR ];
 extern SPECIES_DEF SpeciesTable[ MAX_SPECIES ];
+extern FAMILY_DEF FamilyTable[ MAX_FAMILIES ];
 extern KREACT 	kr	 [ MAX_EQN ];
 extern CODE 	ReverseCode[ MAX_SPECIES ];
 extern CODE 	Code	 [ MAX_SPECIES ];
 extern float** 	Stoich_Left;
 extern float** 	Stoich;
 extern float**  Stoich_Right;
+extern float**  Prod_Coeff;
+extern float**  Loss_Coeff;
 extern int 	Reactive [ MAX_SPECIES ];
+
+extern CODE *Prod_Spc[ MAX_EQN ];
+extern CODE *Loss_Spc[ MAX_EQN ];
 
 extern int **structB;
 extern int **structJ;

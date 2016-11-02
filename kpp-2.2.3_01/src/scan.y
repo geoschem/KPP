@@ -75,8 +75,8 @@
 
 %token JACOBIAN DOUBLE FUNCTION DEFVAR DEFRAD DEFFIX SETVAR SETRAD SETFIX 
 %token HESSIAN STOICMAT STOCHASTIC DECLARE
-%token INITVALUES EQUATIONS LUMP INIEQUAL EQNEQUAL EQNCOLON 
-%token LMPCOLON LMPPLUS SPCPLUS SPCEQUAL ATOMDECL CHECK CHECKALL REORDER
+%token INITVALUES EQUATIONS FAMILIES LUMP INIEQUAL EQNEQUAL EQNCOLON 
+%token LMPCOLON LMPPLUS SPCPLUS SPCEQUAL FAMCOLON ATOMDECL CHECK CHECKALL REORDER
 %token MEX DUMMYINDEX EQNTAGS
 %token LOOKAT LOOKATALL TRANSPORT TRANSPORTALL MONITOR USES SPARSEDATA
 %token WRITE_ATM WRITE_SPC WRITE_MAT WRITE_OPT INITIALIZE XGRID YGRID ZGRID
@@ -91,6 +91,8 @@
 %type <str> TPTID USEID
 %type <str> rate eqntag
 %token FLUX
+%token      PLSPC
+%type <str> PLSPC
 
 %%
 
@@ -149,6 +151,8 @@ section	        : JACOBIAN PARAMETER
                 | INITVALUES initvalues
                   {}
                 | EQUATIONS equations
+                  {}
+                | FAMILIES families
                   {}
                 | LUMP lumps  
                   {}
@@ -271,7 +275,30 @@ setspcspc	: SSPID
                       case SETFIX: SetSpcType( FIX_SPC, $1 ); break;
                     }
                   }
-                ;     
+                ;
+families        : families family semicolon
+                | family semicolon
+                | error semicolon
+                  { ParserErrorMessage(); }
+                ;
+family          : SPCSPC FAMCOLON members
+                  { DeclareFamily( $1 );
+                  }
+                  ;
+/*famname         : SPCSPC FAMCOLON
+  { DeclareFamily( $1 ); }*/
+                 ;
+members         : members SPCPLUS member
+                | member
+                ; 
+member          : SPCNR SPCSPC
+                  { AddMember( $2, $1 );
+                  }
+                | SPCSPC
+                  { AddMember( $1, "1" );
+		    /*		    FinalizeFamily();*/
+                  }
+                ;
 species         : species spc semicolon
                 | spc semicolon 
                 | error semicolon

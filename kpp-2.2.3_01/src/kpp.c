@@ -443,6 +443,21 @@ for (i=0; i<MAX_SPECIES; i++)
     if ( (Stoich[i] = (float*)calloc(MAX_EQN,sizeof(float)))==NULL ) {
         FatalError(-30,"Cannot allocate Stoich[%d].",i);
     }
+/**/
+if ( (Loss_Coeff =(float**)calloc(MAX_FAMILIES,sizeof(float*)))==NULL ) 
+    FatalError(-30,"Cannot allocate Loss_Coeff.\n");
+
+ for (i=0; i<MAX_FAMILIES; i++)    
+  if ( (Loss_Coeff[i] = (float*)calloc(MAX_EQN,sizeof(float)))==NULL ) {
+        FatalError(-30,"Cannot allocate Loss_Coeff[%d]",i,MAX_FAMILIES);
+    }
+if ( (Prod_Coeff = (float**)calloc(MAX_FAMILIES,sizeof(float*)))==NULL ) 
+    FatalError(-30,"Cannot allocate Prod_Coeff.\n");
+
+for (i=0; i<MAX_FAMILIES; i++)    
+    if ( (Prod_Coeff[i] = (float*)calloc(MAX_EQN,sizeof(float)))==NULL ) {
+        FatalError(-30,"Cannot allocate Prod_Coeff[%d].",i);
+    }
 
 }
 

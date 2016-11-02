@@ -39,6 +39,7 @@
 
 int AtomNr    = 0;
 int SpeciesNr = 0;
+int FamilyNr  = 0;
 int EqnNr     = 0;
 int SpcNr     = 0;
 int VarNr     = 0;
@@ -58,6 +59,7 @@ int falseSpcNr = 0;
 
 ATOM_DEF AtomTable[ MAX_ATNR ];
 SPECIES_DEF SpeciesTable[ MAX_SPECIES ];
+FAMILY_DEF FamilyTable[ MAX_FAMILIES ];
 CODE ReverseCode[ MAX_SPECIES ];
 CODE Code[ MAX_SPECIES ];
 KREACT kr[ MAX_EQN ];
@@ -65,6 +67,10 @@ KREACT kr[ MAX_EQN ];
 float** Stoich_Left;
 float** Stoich;
 float** Stoich_Right;
+float** Prod_Coeff;
+float** Loss_Coeff;
+CODE    *Prod_Spc[ MAX_EQN ];
+CODE    *Loss_Spc[ MAX_EQN ];
 int Reactive[ MAX_SPECIES ];
 
 INLINE_KEY InlineKeys[] = { { F77_GLOBAL,   APPEND,  "F77_GLOBAL" },
@@ -125,6 +131,9 @@ double cfactor = 1.;
 
 ATOM crtAtoms[ MAX_ATOMS ];
 int crtAtomNr = 0;
+
+MEMBER crtMembers[ MAX_MEMBERS ];
+int crtMemberNr = 0;
 
 char *fileList[ MAX_FILES ];
 int fileNr = 0;
@@ -500,7 +509,6 @@ int i;
       SpeciesTable[ index ].atoms[i] = crtAtoms[i];
   }
   crtAtomNr = 0;
-  /* printf("\n Stored %s of type %d with index %d", spname, type, index);*/
 }
 
 void DeclareSpecies( int type, char *spname )
@@ -706,17 +714,17 @@ double val;
 char buf[40];
 char spstr[40]; /* msl_270416 */
 char eqNr[40]; /* msl_270416 */
-
+ 
  if ( EqNoCase(spname, "RR") ) {
    if ( doFlux == 1 ) {
      sprintf(eqNr, "%d", EqnNr+1);
      strcpy( spstr, spname );
      strcat( spstr, eqNr );
      DeclareSpecies( PL_SPC, spstr );
-     /*printf("\nAdded species %s to %d (LHS=%d; RHS=%d)",spstr,side,LHS,RHS); /*msl*/
+     /*printf("\nAdded species %s to %d (LHS=%d; RHS=%d)",spstr,side,LHS,RHS);*/ /*msl*/
    }
    else {
-     return;
+     return; /* Because FLUX is not ON. Thus, add no new species. */
    }}
    else  {
      strcpy( spstr, spname );
@@ -853,7 +861,6 @@ void AddUseFile( char *fname )
 
 char * AppendString( char * s1, char * s2, int * maxlen, int addlen ) 
 {
-char * tmp;
 
   *maxlen += addlen;
 
@@ -871,7 +878,6 @@ char * tmp;
 
 char * ReplaceString( char * s1, char * s2, int * maxlen, int addlen ) 
 {
-char * tmp;
 
   if( s1 ) free(s1);
 
@@ -936,6 +942,12 @@ int code;
       Stoich_Right[i][j] = 0;
     }
   }
+  for( i = 0; i < MAX_FAMILIES; i++ ) {
+    for( j = 0; j < MAX_EQN; j++ ) {
+      Prod_Coeff[i][j] = 0;
+      Loss_Coeff[i][j] = 0;
+    }
+  }
   for( i = 0; i < MAX_SPECIES; i++ ) {
     SpeciesTable[ i ].nratoms = 0;
   }
@@ -961,4 +973,187 @@ int code;
 
   return code;
 }
+/* -----------------------------------------------------------------------*/
+/* -- The following routines were added for the FAMILIES functionality -- */
+/* -----------------------------------------------------------------------*/
+void ProcessProdLossTerm( int EqNr, char *sign, char *coef, char *spname  )
+{
+int code;  
+CODE crtSpec;
+double val;
+char buf[40];
+ 
+  code = FindSpecies( spname );
+  if ( code < 0 ) {
+    ScanError("Undefined species %s.", spname );
+    return;
+  }
+  
+  crtSpec = ReverseCode[ code ];
 
+  if ( crtSpec == NO_CODE ) {
+    if( MAX_SPECIES - code <= 2 ) falseSpcNr++;
+    crtSpec = SpcNr++;
+    Code[ crtSpec ] = code;
+    ReverseCode[ code ] = crtSpec;
+  }
+  
+  strcpy( buf, sign ); 
+  strcat( buf, coef ); 
+  sscanf( buf, "%lf", &val );
+
+  Stoich_Right[ crtSpec ][ EqNr ] = val;
+  Stoich[ crtSpec ][ EqNr ]       = val;
+
+  /*printf("\nSpecies %s with Stoich[%d][%d] = %f. SpcNr=%d. Code=%d. ReverseCode=%d",spname,crtSpec,EqNr,Stoich[crtSpec][EqNr],SpcNr,Code[crtSpec],ReverseCode[ code ]);*/
+}
+           
+int FindFamily( char *famname )
+{
+int i;
+  
+  for( i=0; i<FamilyNr; i++ )
+    if( EqNoCase( FamilyTable[ i ].name, famname ) ) {
+      return i;   
+    }
+  for( i=0; i<2; i++ )
+    if( EqNoCase( FamilyTable[ MAX_FAMILIES -1 - i ].name, famname ) ) {
+      return MAX_FAMILIES -1 - i;   
+    }
+  return -1;      
+}
+
+void ScanEquations( MEMBER crtMbr ) {
+  int crtCode;
+  int newSpcCode;
+  int type;
+  int i;
+  float coeff;
+  int tmpval;
+  char spstr[40];
+  char eqNr[40];
+  char p[250];
+  
+  type = FamilyTable[FamilyNr].type;
+  
+  crtCode = ReverseCode[crtMbr.code];
+  /* -- Loop through equations -- */
+  /* -- -- Set coeff. values   -- */
+  for( i=0; i<EqnNr; i++ ) {
+    tmpval = 0;
+    switch( type ) {
+    case LOSS_FAM:
+      if ( Stoich_Left[ crtCode ][ i ] > 0 ) { /* Then this species is part of this equations's LHS */
+	tmpval = 1;
+	coeff = Stoich_Left[ crtCode ][ i ] * crtMbr.coeff;
+	Loss_Coeff[ FamilyNr ][ i ] += coeff;
+	break; }
+      else break;
+    case PROD_FAM:
+      if ( Stoich_Right[ crtCode ][ i ] > 0 ) { /* Then this species is part of this equations's RHS */
+	tmpval = 1;
+	coeff = Stoich_Right[ crtCode ][ i ] * crtMbr.coeff;
+	Prod_Coeff[ FamilyNr ][ i ] += coeff;
+	break; }
+      else break;
+    }
+    
+    /* -- If found, does equation already have a PL_SPEC, if not add one and declare it -- */
+    if ( tmpval == 1 ) {
+      sprintf(eqNr, "%d", i+1 );
+      strcpy( spstr, "RR" );
+      strcat( spstr, eqNr );
+      /* -- -- Scan all species to see if RR_<i> exists. -- -- */
+      newSpcCode = FindSpecies( spstr );
+      /* -- -- If not, then declare it                   -- -- */
+      if ( newSpcCode < 0 ){
+	DeclareSpecies( VAR_SPC, spstr );
+      } 
+      /* -- -- Now, add this species to the appropriate Stoich* arrays -- */
+      ProcessProdLossTerm( i, "+", "1", spstr );
+    switch( type ) {
+    case LOSS_FAM:
+      Loss_Spc[ i ] = &ReverseCode[ FindSpecies( spstr ) ];
+      break;
+    case PROD_FAM:
+      Prod_Spc[ i ] = &ReverseCode[ FindSpecies( spstr ) ];
+      break;
+    }
+      
+    }
+  }
+  /* -- -- */
+}
+
+void AddMember( char *mbrname, char *nr )
+{
+int code;
+ 
+  code = FindSpecies( mbrname );
+  if ( code < 0 ) {
+    ScanError("Undefined member %s.", mbrname );
+    return;
+  }
+
+  strcpy( crtMembers[ crtMemberNr ].name, mbrname );
+  crtMembers[ crtMemberNr ].nr        = (unsigned char)atoi(nr);
+  crtMembers[ crtMemberNr ].coeff     = (unsigned char)atof(nr);
+  crtMembers[ crtMemberNr ].coeff_str = nr;
+  crtMembers[ crtMemberNr ].code      = code;
+  crtMemberNr++;
+
+}
+
+void FinalizeFamily()
+{
+  int i;
+  
+  if( (FamilyTable[ FamilyNr ].nrmembers == 0) || ( crtMemberNr > 0 ) ) {
+    FamilyTable[ FamilyNr ].nrmembers = crtMemberNr;
+    for( i = 0; i < crtMemberNr; i++ ) {
+      FamilyTable[ FamilyNr ].members[i] = crtMembers[i];
+      ScanEquations( crtMembers[i] );
+    }
+  }
+  
+  crtMemberNr = 0;
+  FamilyNr++;
+}
+
+void DeclareFamily( char *famname )
+{
+ int code;
+ int type;
+ char prefix;
+ 
+  /* -- Scan for duplicate families first -- */
+  code = FindFamily( famname );
+  if ( code >= 0 ) {
+    ScanError("Multiple declaration for family %s.", famname );
+    return;
+  }
+
+  if( FamilyNr >= MAX_FAMILIES ) {
+    Error("Too many families.");
+    return;
+  }
+  /* -- Determine if it's a P/L family -- */
+  prefix = famname[0];
+  if ( prefix == 'P' ) {
+    type = PROD_FAM;
+  } else if ( prefix == 'L' ){
+    type = LOSS_FAM;
+  } else {
+    ScanError( "%s must be declared as a P/L term with appropriate suffix (P,L).", famname );
+    return;
+  }
+    
+  /* -- Store family in family table and increment -- */
+  strcpy( FamilyTable[ FamilyNr ].name, famname );
+  FamilyTable[ FamilyNr ].type = type; 
+  *FamilyTable[ FamilyNr ].ival = '\0'; 
+  FinalizeFamily();
+}
+
+/* -- End of FAMILIES functionality -- */
+/* ----------------------------------- */
