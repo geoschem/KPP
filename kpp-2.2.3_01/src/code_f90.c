@@ -409,7 +409,10 @@ char dsbuf[200];
           if( i < i_to-1 ) {
             bprintf( "," );
             if( (i+1) % maxCols == 0 ) {
-              bprintf( " &\n     " );
+              if (maxCols == 1 ) {
+		bprintf( " & ! index %d\n     ", i+1 ); }
+	      else {
+		bprintf( " & ! index %d - %d\n     ", i-maxCols+2, i+1 ); }
               nlines++;
             }
           }

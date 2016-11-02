@@ -54,7 +54,7 @@ SUBROUTINE INTEGRATE( TIN, TOUT, &
    ISTATUS(:) = 0
    RSTATUS(:) = 0.0_dp
 
-    !~~~> fine-tune the integrator:
+   !~~~> fine-tune the integrator:
    ICNTRL(1) = 0	! 0 - non-autonomous, 1 - autonomous
    ICNTRL(2) = 0	! 0 - vector tolerances, 1 - scalars
 
@@ -616,6 +616,7 @@ Stage: DO istage = 1, ros_S
 
    END DO UntilAccepted
 
+   
    END DO TimeLoop
 
 !~~~> Succesful exit

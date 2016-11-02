@@ -75,6 +75,7 @@ int ATOL, RTOL, STEPMIN, STEPMAX, CFACTOR;
 int V_USER, CL;
 int NMLCV, NMLCF, SCT, PROPENSITY, VOLUME, IRCT;
 int FLUX_MAP;
+int FAM,NFAM;
 
 int Jac_NZ, LU_Jac_NZ, nzr;
 
@@ -138,6 +139,7 @@ int i,j;
   NREACT  = DefConst( "NREACT",  INT, "Number of reactions" );
   NVARST  = DefConst( "NVARST",  INT, "Starting of variables in conc. vect." );
   NFIXST  = DefConst( "NFIXST",  INT, "Starting of fixed in conc. vect." );
+  NFAM    = DefConst( "NFAM",    INT, "Number of Prod/Loss Families");
   NONZERO = DefConst( "NONZERO", INT, "Number of nonzero entries in Jacobian" );
   LU_NONZERO = DefConst( "LU_NONZERO", INT, "Number of nonzero entries in LU factoriz. of Jacobian" );
   CNVAR   = DefConst( "CNVAR",   INT, "(NVAR+1) Number of elements in compressed row format" );
@@ -153,6 +155,8 @@ int i,j;
   F = DefvElm( "F", real, -NFIX, "Concentrations of fixed species (local)" );
 
   V_USER = DefvElm( "V_USER", real, -NVAR, "Concentration of variable species in USER's order" );
+ 
+  FAM    = DefvElm( "FAM", real, -NFAM, "Accumulated user-defined prod/loss families." );
  
   RCONST = DefvElm( "RCONST", real, -NREACT, "Rate constants (global)" );
   RCT    = DefvElm( "RCT",    real, -NREACT, "Rate constants (local)" );
@@ -2364,10 +2368,10 @@ int mxyz;
    Declare( VAR );
    Declare( FIX );
    WriteComment("VAR, FIX are chunks of array C");
-   F77_Inline("!      EQUIVALENCE( %s(%d),%s(1) )", 
+   F77_Inline("      EQUIVALENCE( %s(%d),%s(1) )", 
             varTable[C]->name, 1, varTable[VAR]->name );
    if ( FixNr > 0 ) { /*  mz_rs_20050121 */
-     F77_Inline("!      EQUIVALENCE( %s(%d),%s(1) )", 
+     F77_Inline("      EQUIVALENCE( %s(%d),%s(1) )", 
        varTable[C]->name, VarNr+1, varTable[FIX]->name );
    }
   }
@@ -2376,10 +2380,10 @@ int mxyz;
      ExternDeclare( VAR );
      ExternDeclare( FIX );
      WriteComment("VAR, FIX are chunks of array C");
-     F90_Inline("!      EQUIVALENCE( %s(%d),%s(1) )", 
+     F90_Inline("      EQUIVALENCE( %s(%d),%s(1) )", 
             varTable[C]->name, 1, varTable[VAR]->name );
      if ( FixNr > 0 ) { /*  mz_rs_20050121 */
-       F90_Inline("!      EQUIVALENCE( %s(%d),%s(1) )", 
+       F90_Inline("      EQUIVALENCE( %s(%d),%s(1) )", 
          varTable[C]->name, VarNr+1, varTable[FIX]->name );
      }
   }
@@ -2482,9 +2486,10 @@ char s[40];
         sprintf(s, "%g", mat[spc][eq]?mat[spc][eq]:(-mat[spc][eq]));
         /*  mz_rs_20050130- */
         /* remove trailing zeroes */
-        for (n= strlen(s) - 1; n >= 0; n--) 
-          if (s[n] != '0') break; 
-        s[n + 1]= '\0';
+        /* -- Commented out my MSL - Oct 26, 2016: Unable to manage integers ending in '0'*/
+        /*for (n= strlen(s) - 1; n >= 0; n--) 
+          if (s[n] != '0') break; */
+        s[strlen(s)]= '\0';
         sprintf(s, "%s ", s);
       }
      
@@ -3316,6 +3321,7 @@ int n;
   GenerateUpdatePhoto();
   GenerateGetMass(); 
 
+  GenerateComputeFamilies();
 
   printf("\nKPP is generating the parameters:");
   printf("\n    - %s_Parameters",rootFileName);  
@@ -3453,4 +3459,38 @@ int Index( int i )
 	   default: printf("\n Unknown language no %d\n",useLang);
 	     exit(1);  
         }
+}
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+void GenerateComputeFamilies()
+{
+  int i,j;
+  int ComputeFamilies;
+
+  UseFile( utilFile );
+
+  ComputeFamilies    = DefFnc( "ComputeFamilies", 2, "function to calculate user-defined Prod/Loss families");
+  FunctionBegin( ComputeFamilies, VAR, FAM );
+  
+  NewLines(1);
+  WriteComment("Computation of prod/loss families");
+  
+  for (i = 0; i < FamilyNr; i++)  {
+    sum = Const( 0 );
+    for(j=0; j<EqnNr; j++) {
+      switch( FamilyTable[ i ].type ) {
+      case(PROD_FAM):
+	if ( Prod_Coeff[ i ][ j ] != 0 )
+	  sum = Add( sum, Mul(Const(Prod_Coeff[ i ][ j ]),Elm( V, Index( *Prod_Spc[ j ]-1 ) ) ) );
+	break;
+      case(LOSS_FAM):
+	if ( Loss_Coeff[ i ][ j ] != 0 )
+	  sum = Add( sum, Mul(Const(Loss_Coeff[ i ][ j ]),Elm( V, Index( *Loss_Spc[ j ]-1 ) ) ) );
+	break;
+      }
+    }
+    Assign( Elm( FAM, i ), sum );
+  }
+
+  FunctionEnd( ComputeFamilies );
+  FreeVariable( ComputeFamilies );
 }
