@@ -1025,64 +1025,47 @@ int i;
 
 void ScanEquations( MEMBER crtMbr ) {
   int crtCode;
-  int newSpcCode;
-  int type;
   int i;
   float coeff;
-  int tmpval;
-  char spstr[40];
-  char eqNr[40];
-  char p[250];
-  
-  type = FamilyTable[FamilyNr].type;
   
   crtCode = ReverseCode[crtMbr.code];
   /* -- Loop through equations -- */
   /* -- -- Set coeff. values   -- */
   for( i=0; i<EqnNr; i++ ) {
-    tmpval = 0;
-    switch( type ) {
+    if ( Stoich_Left[ crtCode ][ i ] > 0 ) { /* Then this species is part of this equations's LHS */
+      coeff = Stoich_Left[ crtCode ][ i ] * crtMbr.coeff;
+      Loss_Coeff[ FamilyNr ][ i ] += Stoich_Left[ crtCode ][ i ] * crtMbr.coeff;
+    }
+    if ( Stoich_Right[ crtCode ][ i ] > 0 ) { /* Then this species is part of this equations's RHS */
+      coeff = Stoich_Right[ crtCode ][ i ] * crtMbr.coeff;
+      Prod_Coeff[ FamilyNr ][ i ] += Stoich_Right[ crtCode ][ i ] * crtMbr.coeff;
+    }
+    /* ---------------------------------------------------------------------------------------------*/
+    /* ---------------------------------------------------------------------------------------------*/
+    /* -- THE CODE BELOW PERMITS CALCULATION OF GROSS PROD/LOSS FAMILIES. CURRENTLY ONLY NET     -- */
+    /* -- PROD/LOSS FAMILIES ARE CALCULATED. THE VARIABLE STRUCTURES REMAIN IN PLACE FOR GROSS   -- */
+    /* -- P/L CALCULATION AND ARE SIMPLY MODIFIED TO PROVIDE THE NET RESULT. MSL - Nov. 3, 2016  -- */
+    /* ---------------------------------------------------------------------------------------------*/
+    /* ---------------------------------------------------------------------------------------------*/
+    /*switch( type ) {
     case LOSS_FAM:
       if ( Stoich_Left[ crtCode ][ i ] > 0 ) { /* Then this species is part of this equations's LHS */
-	tmpval = 1;
+    /*tmpval = 1;
 	coeff = Stoich_Left[ crtCode ][ i ] * crtMbr.coeff;
-	Loss_Coeff[ FamilyNr ][ i ] += coeff;
+	Loss_Coeff[ FamilyNr ][ i ] += Stoich_Left[ crtCode ][ i ] * crtMbr.coeff;
 	break; }
       else break;
     case PROD_FAM:
       if ( Stoich_Right[ crtCode ][ i ] > 0 ) { /* Then this species is part of this equations's RHS */
-	tmpval = 1;
+    /*tmpval = 1;
 	coeff = Stoich_Right[ crtCode ][ i ] * crtMbr.coeff;
-	Prod_Coeff[ FamilyNr ][ i ] += coeff;
+	Prod_Coeff[ FamilyNr ][ i ] += Stoich_Right[ crtCode ][ i ] * crtMbr.coeff;
 	break; }
       else break;
-    }
-    
-    /* -- If found, does equation already have a PL_SPEC, if not add one and declare it -- */
-    if ( tmpval == 1 ) {
-      sprintf(eqNr, "%d", i+1 );
-      strcpy( spstr, "RR" );
-      strcat( spstr, eqNr );
-      /* -- -- Scan all species to see if RR_<i> exists. -- -- */
-      newSpcCode = FindSpecies( spstr );
-      /* -- -- If not, then declare it                   -- -- */
-      if ( newSpcCode < 0 ){
-	DeclareSpecies( VAR_SPC, spstr );
-      } 
-      /* -- -- Now, add this species to the appropriate Stoich* arrays -- */
-      ProcessProdLossTerm( i, "+", "1", spstr );
-    switch( type ) {
-    case LOSS_FAM:
-      Loss_Spc[ i ] = &ReverseCode[ FindSpecies( spstr ) ];
-      break;
-    case PROD_FAM:
-      Prod_Spc[ i ] = &ReverseCode[ FindSpecies( spstr ) ];
-      break;
-    }
-      
-    }
+    }*/
+    /* ---------------------------------------------------------------------------------------------*/
+    /* ---------------------------------------------------------------------------------------------*/    
   }
-  /* -- -- */
 }
 
 void AddMember( char *mbrname, char *nr )
@@ -1107,12 +1090,57 @@ int code;
 void FinalizeFamily()
 {
   int i;
+  int type;
+  char spstr[40];
+  char eqNr[40];
+  int newSpcCode;
+  
+  type = FamilyTable[FamilyNr].type;
   
   if( (FamilyTable[ FamilyNr ].nrmembers == 0) || ( crtMemberNr > 0 ) ) {
     FamilyTable[ FamilyNr ].nrmembers = crtMemberNr;
     for( i = 0; i < crtMemberNr; i++ ) {
       FamilyTable[ FamilyNr ].members[i] = crtMembers[i];
       ScanEquations( crtMembers[i] );
+    }
+    /* -- -- IF P-L is not zero then we can proceed. This is for efficiency: don't add dummy  -- -- */
+    /* -- -- species if their net result is zero! (MSL)                                       -- -- */
+    /* -- If found, does equation already have a PL_SPEC, if not add one and declare it -- */
+    for( i=0; i<EqnNr; i++ ) {
+      switch( type ) {
+      case LOSS_FAM:
+	if ( (Loss_Coeff[ FamilyNr ][ i ] - Prod_Coeff[ FamilyNr ][ i ]) > 0. ) {
+	  sprintf(eqNr, "%d", i+1 );
+	  strcpy( spstr, "RR" );
+	  strcat( spstr, eqNr );
+	  /* -- -- Scan all species to see if RR_<i> exists. -- -- */
+	  newSpcCode = FindSpecies( spstr );
+	  /* -- -- If not, then declare it                   -- -- */
+	  if ( newSpcCode < 0 ){
+	    DeclareSpecies( VAR_SPC, spstr );
+	  } 
+	  /* -- -- Now, add this species to the appropriate Stoich* arrays -- */
+	  ProcessProdLossTerm( i, "+", "1", spstr );
+	  Loss_Spc[ i ] = &ReverseCode[ FindSpecies( spstr ) ];
+	  break;
+	}
+      case PROD_FAM:
+	if ( (Prod_Coeff[ FamilyNr ][ i ] - Loss_Coeff[ FamilyNr ][ i ]) > 0. ) {
+	  sprintf(eqNr, "%d", i+1 );
+	  strcpy( spstr, "RR" );
+	  strcat( spstr, eqNr );
+	  /* -- -- Scan all species to see if RR_<i> exists. -- -- */
+	  newSpcCode = FindSpecies( spstr );
+	  /* -- -- If not, then declare it                   -- -- */
+	  if ( newSpcCode < 0 ){
+	    DeclareSpecies( VAR_SPC, spstr );
+	  } 
+	  /* -- -- Now, add this species to the appropriate Stoich* arrays -- */
+	  ProcessProdLossTerm( i, "+", "1", spstr );
+	  Prod_Spc[ i ] = &ReverseCode[ FindSpecies( spstr ) ];
+	  break;
+	}
+      }
     }
   }
   

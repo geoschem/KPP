@@ -3479,12 +3479,13 @@ void GenerateComputeFamilies()
     for(j=0; j<EqnNr; j++) {
       switch( FamilyTable[ i ].type ) {
       case(PROD_FAM):
-	if ( Prod_Coeff[ i ][ j ] != 0 )
-	  sum = Add( sum, Mul(Const(Prod_Coeff[ i ][ j ]),Elm( V, Index( *Prod_Spc[ j ]-1 ) ) ) );
+	if ( ( Prod_Coeff[ i ][ j ] - Loss_Coeff[ i ][ j ] ) > 0 ) {
+	  sum = Add( sum, Mul(Const(Prod_Coeff[ i ][ j ]-Loss_Coeff[ i ][ j ]),Elm( V, Index( *Prod_Spc[ j ]-1 ) ) ) );
+	}
 	break;
       case(LOSS_FAM):
-	if ( Loss_Coeff[ i ][ j ] != 0 )
-	  sum = Add( sum, Mul(Const(Loss_Coeff[ i ][ j ]),Elm( V, Index( *Loss_Spc[ j ]-1 ) ) ) );
+	if ( ( Loss_Coeff[ i ][ j ] - Prod_Coeff[ i ][ j ] ) > 0 )
+	  sum = Add( sum, Mul(Const(Loss_Coeff[ i ][ j ]-Prod_Coeff[ i ][ j ]),Elm( V, Index( *Loss_Spc[ j ]-1 ) ) ) );
 	break;
       }
     }
