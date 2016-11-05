@@ -66,7 +66,7 @@ int IROW, ICOL, CROW, DIAG;
 int LU_IROW, LU_ICOL, LU_CROW, LU_DIAG, CNVAR;   
 int LOOKAT, NLOOKAT, MONITOR, NMONITOR;
 int NMASS, SMASS;
-int SPC_NAMES, EQN_NAMES;
+int SPC_NAMES, EQN_NAMES, FAM_NAMES;
 int EQN_TAGS; 
 int NONZERO, LU_NONZERO;
 int TIME, SUN, TEMP;
@@ -254,6 +254,7 @@ int i,j;
   EQN_TAGS    = DefvElm( "EQN_TAGS", STRING, -NREACT, "Equation tags" );
   EQN_NAMES  = DefvElm( "EQN_NAMES", DOUBLESTRING, -NREACT, "Equation names" );
   SPC_NAMES  = DefvElm( "SPC_NAMES", STRING, -NSPEC, "Names of chemical species" );
+  FAM_NAMES  = DefvElm( "FAM_NAMES", STRING, -NFAM, "Names of chemical familes" );
 
   FLUX_MAP   = DefvElm( "FLUX_MAP", INT, -NREACT, "Map-to-SPEC indeces for FLUX species" );
 
@@ -387,6 +388,7 @@ int  *trans;
 char *strans[MAX_SPECIES];
 char *smass[MAX_ATOMS];
 char *seqn[MAX_EQN];
+char *sfam[MAX_FAMILIES];
 char *bufeqn, *p;
 int dim;
 int flxind[MAX_EQN];
@@ -496,6 +498,11 @@ int flxind[MAX_EQN];
     InitDeclare( EQN_TAGS, EqnNr, (void*)seqn );
   }
   
+  for (i = 0; i < FamilyNr; i++) {
+    sfam[i] = FamilyTable[ i ].name;
+  }  
+  InitDeclare( FAM_NAMES, FamilyNr, (void*)sfam );
+
   NewLines(1);
   WriteComment("INLINED global variables");
 
@@ -2429,6 +2436,7 @@ int mxyz;
      ExternDeclare( SMASS );
      ExternDeclare( EQN_NAMES );  
      ExternDeclare( EQN_TAGS );
+     ExternDeclare( FAM_NAMES );  
   }
 
   NewLines(1);

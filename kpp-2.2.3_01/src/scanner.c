@@ -1105,7 +1105,6 @@ void FinalizeFamily()
     }
     /* -- -- IF P-L is not zero then we can proceed. This is for efficiency: don't add dummy  -- -- */
     /* -- -- species if their net result is zero! (MSL)                                       -- -- */
-    /* -- If found, does equation already have a PL_SPEC, if not add one and declare it -- */
     for( i=0; i<EqnNr; i++ ) {
       switch( type ) {
       case LOSS_FAM:
