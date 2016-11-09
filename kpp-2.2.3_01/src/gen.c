@@ -3478,7 +3478,7 @@ void GenerateComputeFamilies()
   UseFile( utilFile );
 
   ComputeFamilies    = DefFnc( "ComputeFamilies", 2, "function to calculate user-defined Prod/Loss families");
-  FunctionBegin( ComputeFamilies, VAR, FAM );
+  FunctionBegin( ComputeFamilies, V, FAM );
   
   NewLines(1);
   WriteComment("Computation of prod/loss families");
