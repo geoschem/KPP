@@ -51,7 +51,7 @@
 #define MAX_FILES	 20
 #define MAX_FAMILIES	 50
 #define MAX_MEMBERS 	150
-#define MAX_EQNLEN      100
+#define MAX_EQNLEN      200
 
 #define NO_CODE 	-1
 #define max( x, y ) (x) > (y) ? (x) : (y)
