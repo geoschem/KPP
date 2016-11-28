@@ -2249,7 +2249,10 @@ void GenerateParamHeader()
 {
 int spc;
 int i;
-char name[20];
+/*  mz_rs_20161121+ */
+/* char name[20]; */
+char name[MAX_SPNAME];
+/*  mz_rs_20161121- */
 int offs;
 int mxyz;
 
