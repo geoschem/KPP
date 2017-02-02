@@ -1109,7 +1109,7 @@ void FinalizeFamily()
       switch( type ) {
       case LOSS_FAM:
 	if ( (Loss_Coeff[ FamilyNr ][ i ] - Prod_Coeff[ FamilyNr ][ i ]) > 0. ) {
-	  sprintf(eqNr, "%d", i+1 );
+	  sprintf(eqNr, "%d", FamilyNr );
 	  strcpy( spstr, "RR" );
 	  strcat( spstr, eqNr );
 	  /* -- -- Scan all species to see if RR_<i> exists. -- -- */
@@ -1125,7 +1125,7 @@ void FinalizeFamily()
 	}
       case PROD_FAM:
 	if ( (Prod_Coeff[ FamilyNr ][ i ] - Loss_Coeff[ FamilyNr ][ i ]) > 0. ) {
-	  sprintf(eqNr, "%d", i+1 );
+	  sprintf(eqNr, "%d", FamilyNr );
 	  strcpy( spstr, "RR" );
 	  strcat( spstr, eqNr );
 	  /* -- -- Scan all species to see if RR_<i> exists. -- -- */
