@@ -1102,6 +1102,7 @@ void FinalizeFamily()
   int type;
   char spstr[40];
   char eqNr[40];
+  char Coef[40];
   int newSpcCode;
   
   type = FamilyTable[FamilyNr].type;
@@ -1127,7 +1128,8 @@ void FinalizeFamily()
 	    DeclareSpecies( VAR_SPC, spstr );
 	  } 
 	  /* -- -- Now, add this species to the appropriate Stoich* arrays -- */
-	  ProcessProdLossTerm( LOSS_FAM, i, "+", "1", spstr );
+	  sprintf(Coef,"%f",Loss_Coeff[ FamilyNr ][ i ] - Prod_Coeff[ FamilyNr ][ i ]);
+	  ProcessProdLossTerm( LOSS_FAM, i, "+", Coef, spstr );
 	  Loss_Spc[ i ] = &ReverseCode[ FindSpecies( spstr ) ];
 	}
       }
@@ -1143,7 +1145,8 @@ void FinalizeFamily()
 	    DeclareSpecies( VAR_SPC, spstr );
 	  } 
 	  /* -- -- Now, add this species to the appropriate Stoich* arrays -- */
-	  ProcessProdLossTerm( PROD_FAM, i, "+", "1", spstr );
+	  sprintf(Coef,"%f",Prod_Coeff[ FamilyNr ][ i ] - Loss_Coeff[ FamilyNr ][ i ]);
+	  ProcessProdLossTerm( PROD_FAM, i, "+", Coef, spstr );
 	  Prod_Spc[ i ] = &ReverseCode[ FindSpecies( spstr ) ];
 	}
       }
