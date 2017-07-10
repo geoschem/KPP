@@ -334,14 +334,14 @@ char buf[80];
                     " ", var->name, " " );
 
   FlushThisBuf( buf );
-  bprintf( " / \n\n" );
+  bprintf( " /\n\n" );
   FlushBuf();
 }
 
 /*************************************************************************************************/
 void F77_DeclareData( int v, int * values, int n )
 {
-int i, j;
+int i, istart, j;
 int nlines, min, max;
 int split;
 VARIABLE *var;
@@ -349,7 +349,7 @@ int * ival;
 double * dval;
 char **cval;
 int maxCols = MAX_COLS;
-char dsbuf[55];
+char dsbuf[63];
 
   var = varTable[ v ];
   ival = (int*) values;
@@ -359,34 +359,77 @@ char dsbuf[55];
   nlines = 1;
   min = max = 1;
   split = 0;
+  j = 1; /* new line flag, used in integer case only */
+  istart = 0;
 
   switch( var->type ) {
     case VELM: if( n <= 0 ) break;
     	       for( i = 0; i < n; i++ ) {
                  switch( var->baseType ) {
-                   case INT: bprintf( "%3d",  ival[i] ); maxCols=11; break;
+                   case INT: bprintf( "%3d",  ival[i] );
+		     /* for integer case only: adjust maxCols depending on the number
+			of digits, to avoid long data tables with only partly filled lines */
+		     if( j==1 ) {
+		       maxCols = 15; /* default value */
+		       /* 15 *3d integers fit on a fixed format line (72 char max) */
+		       while ( ( i+j <n ) && ( j <= maxCols ) ) {
+			 /* 12*4-digit integer fit on a line */
+			 if( ival[i+j-1] >= 1000 ) maxCols=min(12,maxCols);
+			 /* 10*5-digit integer fit on a line */
+			 if( ival[i+j-1] >= 10000 ) maxCols=min(10,maxCols);
+			 j++;
+		       }
+		     }
+		     /* this "dynamic" feature also requires to store istart and check if
+			i+1-istart is divided by maxCols (see below) */
+		     break;
                    case DOUBLE:
                    case REAL:bprintf( "%5lg", dval[i] ); maxCols=8; break;
-                   case STRING:bprintf( "'%s'", cval[i] ); maxCols=5; break;
+		 case STRING:bprintf( "'%s'", cval[i] );
+		     /* for string case only: adjust maxCols depending on the string length */
+		     if( j==1 ) {
+		       maxCols = 5; /* default value */
+		       /* 5 *10 character (plus separator) fit on a fixed format line (72 char max) */
+		       while ( ( i+j <n ) && ( j <= maxCols ) ) {
+			 /* 5*10 character string fit on a line; reduce by one for longer string */
+			 if( strlen(cval[i+j-1]) > 10 ) maxCols=min(4,maxCols);
+			 /* 4*13 character string fit on a line; reduce by one for longer string */
+			 if( strlen(cval[i+j-1]) > 13 ) maxCols=min(3,maxCols);
+			 /* 3*18 character string fit on a line; reduce by one for longer string */
+			 if( strlen(cval[i+j-1]) > 18 ) maxCols=min(2,maxCols);
+			 j++;
+		       }
+		     }
+		     /* this "dynamic" feature also requires to store istart and check if
+			i+1-istart is divided by maxCols (see below) */
+		     break;
                    case DOUBLESTRING:
-		        strncpy( dsbuf, cval[i], 54 ); dsbuf[54]='\0';
-		        bprintf( "'%48s'", dsbuf ); maxCols=1; break;
+		        strncpy( dsbuf, cval[i], 62 ); dsbuf[63]='\0';
+		        bprintf( "'%s'", dsbuf ); maxCols=1; break;
                  }
-                 if( ( (i+1) % 11 == 0 ) && ( nlines > MAX_LINES ) ) {
+                 /* if( ( (i+1) % maxCols == 0 ) && ( nlines > MAX_LINES-1 ) ) { */
+                 if( ( (i+1-istart) % maxCols == 0 ) && ( nlines > MAX_LINES-1 ) ) {
                      split = 1; nlines = 1;
                      WriteVecData( var, min, max, split );
                      min = max + 1;
-                 }
+		             j = 1; /* j = 1 when a new line starts */
+		             istart = i+1;
+                     }
                  else {
-                   if( i < n-1 ) bprintf( "," );
-                   if( (i+1) % maxCols == 0 ) {
-                     bprintf( "\n%5s*", " " );
-                     nlines++;
-                   }
+                   if( i < n-1 ) {
+		             bprintf( "," );
+                     /* if( (i+1) % maxCols == 0 ) { */
+                     if( (i+1-istart) % maxCols == 0 ) {
+                       bprintf( "\n%5s*", " " );
+		               j = 1; /* j = 1 when a new line starts */
+		               istart = i+1;
+                       nlines++;
+		               }
+		            }
                  }
                  max ++;
                }
-               WriteVecData( var, min, max-1, split );
+               if( min < max ) WriteVecData( var, min, max-1, split );
                break;
 
     case ELM:  bprintf( "%6sDATA %s / ", " ", var->name );
@@ -396,11 +439,11 @@ char dsbuf[55];
                  case REAL:bprintf( "%lg", *dval ); break;
                  case STRING:bprintf( "'%s'", *cval ); break;
                  case DOUBLESTRING:
-		        strncpy( dsbuf, *cval, 54 ); dsbuf[54]='\0';
+		        strncpy( dsbuf, *cval, 62 ); dsbuf[63]='\0';
 		        bprintf( "'%s'", dsbuf ); maxCols=1; break;
                         /* bprintf( "'%50s'", *cval ); break; */
                }
-               bprintf( " / \n" );
+               bprintf( " /\n" );
                FlushBuf();
                break;
     default:
