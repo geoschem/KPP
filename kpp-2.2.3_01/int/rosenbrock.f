@@ -21,8 +21,8 @@
         IPAR(i) = 0
         RPAR(i) = 0.0d0
       ENDDO
-      
-      
+
+     
       IPAR(1) = 0       ! non-autonomous
       IPAR(2) = 1       ! vector tolerances
       RPAR(3) = STEPMIN ! starting step
@@ -169,8 +169,6 @@
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
       IMPLICIT NONE
-      INCLUDE 'KPP_ROOT_Parameters.h'
-      INCLUDE 'KPP_ROOT_Sparse.h'
       
       KPP_REAL Tstart,Tend
       KPP_REAL Y(KPP_NVAR),AbsTol(KPP_NVAR),RelTol(KPP_NVAR)
@@ -203,9 +201,8 @@
       PARAMETER (DeltaMin = 1.0d-5)
 !~~~>   Functions
       EXTERNAL FunTemplate, JacTemplate
-      KPP_REAL WLAMCH, ros_ErrorNorm
-      EXTERNAL WLAMCH, ros_ErrorNorm
-
+      KPP_REAL WLAMCH
+      EXTERNAL WLAMCH
 !~~~>  Initialize statistics
       Nfun = IPAR(11)
       Njac = IPAR(12)
@@ -410,8 +407,6 @@
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
       IMPLICIT NONE
-      INCLUDE 'KPP_ROOT_Parameters.h'
-      INCLUDE 'KPP_ROOT_Sparse.h'
       
 !~~~> Input: the initial condition at Tstart; Output: the solution at T      
       KPP_REAL Y(KPP_NVAR)
@@ -460,29 +455,29 @@
      &       Ndec,Nsol,Nsng
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-      
+
 !~~~>  INITIAL PREPARATIONS
       T = Tstart
       Hexit = 0.0d0
-      H = MIN(Hstart,Hmax) 
+      H = MIN(Hstart,Hmax)
       IF (ABS(H).LE.10.d0*Roundoff) THEN
            H = DeltaMin
-      END IF	   
-      
+      END IF
+
       IF (Tend .GE. Tstart) THEN
         Direction = +1
       ELSE
         Direction = -1
-      END IF		
+      END IF
 
       RejectLastH=.FALSE.
       RejectMoreH=.FALSE.
-   
-!~~~> Time loop begins below 
+
+!~~~> Time loop begins below
 
       DO WHILE ( (Direction.GT.0).AND.((T-Tend)+Roundoff.LE.ZERO)
-     &     .OR. (Direction.LT.0).AND.((Tend-T)+Roundoff.LE.ZERO) ) 
-         
+     &     .OR. (Direction.LT.0).AND.((Tend-T)+Roundoff.LE.ZERO) )
+
       IF ( Nstp.GT.Max_no_steps ) THEN  ! Too many steps
 	CALL ros_ErrorMsg(-6,T,H,IERR)
 	RETURN
@@ -491,8 +486,8 @@
 	CALL ros_ErrorMsg(-7,T,H,IERR)
 	RETURN
       END IF
-      
-!~~~>  Limit H if necessary to avoid going beyond Tend   
+
+!~~~>  Limit H if necessary to avoid going beyond Tend
       Hexit = H
       H = MIN(H,ABS(Tend-T))
 
@@ -501,17 +496,17 @@
 
 !~~~>  Compute the function derivative with respect to T
       IF (.NOT.Autonomous) THEN
-         CALL ros_FunTimeDerivative ( T, Roundoff, Y, 
+         CALL ros_FunTimeDerivative ( T, Roundoff, Y,
      &                       Fcn0, FunTemplate, dFdT )
       END IF
-  
+
 !~~~>   Compute the Jacobian at current time
       CALL JacTemplate(T,Y,Jac0)
- 
+
 !~~~>  Repeat step calculation until current step accepted
       DO WHILE (.TRUE.) ! WHILE STEP NOT ACCEPTED
 
-      
+
       CALL ros_PrepareMatrix(H,Direction,ros_Gamma(1),
      &              Jac0,Ghimj,Pivot,Singular)
       IF (Singular) THEN ! More than 5 consecutive failed decompositions
@@ -521,10 +516,10 @@
 
 !~~~>   Compute the stages
       DO istage = 1, ros_S
-         
+
 	 ! Current istage offset. Current istage vector is K(ioffset+1:ioffset+KPP_NVAR)
 	 ioffset = KPP_NVAR*(istage-1)
-	 
+
 	 ! For the 1st istage the function has been computed previously
 	 IF ( istage.EQ.1 ) THEN
 	   CALL WCOPY(KPP_NVAR,Fcn0,1,Fcn,1)
@@ -533,7 +528,7 @@
 	   CALL WCOPY(KPP_NVAR,Y,1,Ynew,1)
 	   DO j = 1, istage-1
 	     CALL WAXPY(KPP_NVAR,ros_A((istage-1)*(istage-2)/2+j),
-     &                   K(KPP_NVAR*(j-1)+1),1,Ynew,1) 
+     &                  K(KPP_NVAR*(j-1)+1),1,Ynew,1)
 	   END DO
 	   Tau = T + ros_Alpha(istage)*Direction*H
            CALL FunTemplate(Tau,Ynew,Fcn)
@@ -548,26 +543,26 @@
 	   CALL WAXPY(KPP_NVAR,HG,dFdT,1,K(ioffset+1),1)
          END IF
          CALL SolveTemplate(Ghimj, Pivot, K(ioffset+1))
-	 
-      END DO  ! istage	    
-	    
 
-!~~~>  Compute the new solution 
+      END DO  ! istage
+
+
+!~~~>  Compute the new solution
       CALL WCOPY(KPP_NVAR,Y,1,Ynew,1)
       DO j=1,ros_S
 	 CALL WAXPY(KPP_NVAR,ros_M(j),K(KPP_NVAR*(j-1)+1),1,Ynew,1)
       END DO
 
-!~~~>  Compute the error estimation 
+!~~~>  Compute the error estimation
       CALL WSCAL(KPP_NVAR,ZERO,Yerr,1)
-      DO j=1,ros_S        
+      DO j=1,ros_S
 	CALL WAXPY(KPP_NVAR,ros_E(j),K(KPP_NVAR*(j-1)+1),1,Yerr,1)
-      END DO 
+      END DO
       Err = ros_ErrorNorm ( Y, Ynew, Yerr, AbsTol, RelTol, VectorTol )
 
 !~~~> New step size is bounded by FacMin <= Hnew/H <= FacMax
       Fac  = MIN(FacMax,MAX(FacMin,FacSafe/Err**(ONE/ros_ELO)))
-      Hnew = H*Fac  
+      Hnew = H*Fac
 
 !~~~>  Check the error magnitude and adjust step size
       Nstp = Nstp+1
@@ -577,30 +572,30 @@
          T = T + Direction*H
 	 Hnew = MAX(Hmin,MIN(Hnew,Hmax))
          IF (RejectLastH) THEN  ! No step size increase after a rejected step
-	    Hnew = MIN(Hnew,H) 
-	 END IF   
-         RejectLastH = .FALSE.  
+	    Hnew = MIN(Hnew,H)
+	 END IF
+         RejectLastH = .FALSE.
          RejectMoreH = .FALSE.
          H = Hnew
 	 GOTO 101  ! EXIT THE LOOP: WHILE STEP NOT ACCEPTED
       ELSE                 !~~~> Reject step
          IF (RejectMoreH) THEN
 	    Hnew=H*FacRej
-	 END IF   
+	 END IF
          RejectMoreH = RejectLastH
          RejectLastH = .TRUE.
          H = Hnew
          IF (Nacc.GE.1) THEN
 	    Nrej = Nrej+1
-	 END IF    
+	 END IF
       END IF ! Err <= 1
 
       END DO ! LOOP: WHILE STEP NOT ACCEPTED
 
 101   CONTINUE
 
-      END DO ! Time loop    
-      
+      END DO ! Time loop
+
 !~~~> Succesful exit
       IERR = 1  !~~~> The integration was successful
 
@@ -615,7 +610,6 @@
 !~~~> Computes the "scaled norm" of the error vector Yerr
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       IMPLICIT NONE	 
-      INCLUDE 'KPP_ROOT_Parameters.h'
 
 ! Input arguments   
       KPP_REAL Y(KPP_NVAR), Ynew(KPP_NVAR), Yerr(KPP_NVAR)
@@ -650,7 +644,6 @@
 !~~~> The time partial derivative of the function by finite differences
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       IMPLICIT NONE	 
-      INCLUDE 'KPP_ROOT_Parameters.h'
 
 !~~~> Input arguments   
       KPP_REAL T, Roundoff, Y(KPP_NVAR), Fcn0(KPP_NVAR) 
@@ -658,9 +651,6 @@
 !~~~> Output arguments      
       KPP_REAL dFdT(KPP_NVAR)   
 !~~~> Global variables     
-      INTEGER Nfun,Njac,Nstp,Nacc,Nrej,Ndec,Nsol,Nsng
-      COMMON /Statistics/ Nfun,Njac,Nstp,Nacc,Nrej,
-     &       Ndec,Nsol,Nsng     
 !~~~> Local variables     
       KPP_REAL Delta, DeltaMin, ONE     
       PARAMETER ( DeltaMin = 1.0d-6 )   
@@ -687,7 +677,6 @@
 !          -exit after 5 consecutive fails
 ! --- --- --- --- --- --- --- --- --- --- --- --- ---
       IMPLICIT NONE	 
-      INCLUDE 'KPP_ROOT_Parameters.h'
       INCLUDE 'KPP_ROOT_Sparse.h'
       
 !~~~> Input arguments      
@@ -1176,8 +1165,6 @@
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 !  Template for the LU decomposition   
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~      
-      INCLUDE 'KPP_ROOT_Parameters.h'
-      INCLUDE 'KPP_ROOT_Global.h'
 !~~~> Inout variables     
       KPP_REAL A(KPP_LU_NONZERO)
 !~~~> Output variables     
@@ -1200,8 +1187,6 @@
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 !  Template for the forward/backward substitution (using pre-computed LU decomposition)   
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~      
-      INCLUDE 'KPP_ROOT_Parameters.h'
-      INCLUDE 'KPP_ROOT_Global.h'
 !~~~> Input variables     
       KPP_REAL A(KPP_LU_NONZERO)
       INTEGER Pivot(KPP_NVAR)
