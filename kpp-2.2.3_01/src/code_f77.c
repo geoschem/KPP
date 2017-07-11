@@ -114,7 +114,7 @@ char c;
 int first;
 int crtident;
 int number_of_lines = 1, MAX_NO_OF_LINES = 36;
-int ifound, jfound;
+int jfound;
 char op_plus='+', op_minus='-';
 
   crtident = 6 + ident * 2;
@@ -124,7 +124,7 @@ char op_plus='+', op_minus='-';
 
   first = 1;
   while( strlen(rs) > linelg ) {
-    ifound = 0; jfound = 0;
+    jfound = 0;
     if ( number_of_lines >= MAX_NO_OF_LINES ) {/* if a new line needs to be started */
      for( j=linelg; j>5; j-- ) /* split row here if +, -, or comma */
        if ( ( rs[j] == op_plus )||( rs[j] == op_minus )||( rs[j]==',' ) ) {
@@ -134,7 +134,7 @@ char op_plus='+', op_minus='-';
     if ( ( number_of_lines < MAX_NO_OF_LINES )||( !jfound ) ) {
      for( i=linelg; i>10; i-- ) /* split row here if operator or comma */
        if ( ( rs[i] & 0x80 )||( rs[i]==',' ) ) {
-        ifound = 1; break;
+        break;
 	}
      if( i <= 10 ) {
       printf("\n Warning: possible error in continuation lines for %s = ...",ls);
@@ -507,10 +507,8 @@ int narg;
 void F77_FunctionPrototipe( int f, ... )
 {
 char * name;
-int narg;
 
   name = varTable[ f ]->name;
-  narg = varTable[ f ]->maxi;
 
   bprintf("      EXTERNAL %s\n", name );
 
@@ -523,10 +521,8 @@ void F77_FunctionBegin( int f, ... )
 Va_list args;
 int i;
 int vars[20];
-char * name;
 int narg;
 
-  name = varTable[ f ]->name;
   narg = varTable[ f ]->maxi;
 
   Va_start( args, f );

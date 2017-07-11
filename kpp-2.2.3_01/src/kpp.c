@@ -37,7 +37,7 @@
 
 char *eqFileName;
 char *rootFileName = "ff";
-char Home[ MAX_PATH ] = ""; 
+char Home[ MAX_PATH ] = "";
 
 short int linStru[ MAX_SPECIES ];
 short int colStru[ MAX_SPECIES ];
@@ -62,9 +62,9 @@ int CodeCmp( const void *p1, const void *p2 )
 {
 CODE *c1, *c2;
 
-  c1 = (CODE*)p1;  
-  c2 = (CODE*)p2;  
-  
+  c1 = (CODE*)p1;
+  c2 = (CODE*)p2;
+
   if ( *c1 < *c2 ) return -1;
   if ( *c1 > *c2 ) return 1;
   return 0;
@@ -75,12 +75,12 @@ int CodeRCmp( const void *p1, const void *p2 )
 int rc1, rc2;
 CODE *c1, *c2;
 
-  c1 = (CODE*)p1;  
-  c2 = (CODE*)p2;  
+  c1 = (CODE*)p1;
+  c2 = (CODE*)p2;
 
-  rc1 = Reactive[ ReverseCode[ *c1 ] ]; 
+  rc1 = Reactive[ ReverseCode[ *c1 ] ];
   rc2 = Reactive[ ReverseCode[ *c2 ] ];
-  if ( rc1 > rc2 ) return -1; 
+  if ( rc1 > rc2 ) return -1;
   if ( rc1 < rc2 ) return 1;
   if ( *c1 < *c2 ) return -1;
   if ( *c1 > *c2 ) return 1;
@@ -97,13 +97,13 @@ int CodeSCmp( const void *p1, const void *p2 )
 CODE *c1, *c2;
 short int sc1, sc2;
 
-  c1 = (CODE*)p1;  
-  c2 = (CODE*)p2;  
-  
+  c1 = (CODE*)p1;
+  c2 = (CODE*)p2;
+
   sc1 = Stru[ ReverseCode[ *c1 ] ];
   sc2 = Stru[ ReverseCode[ *c2 ] ];
-  
-  if ( sc1 > sc2 ) return 1; 
+
+  if ( sc1 > sc2 ) return 1;
   if ( sc1 < sc2 ) return -1;
   if ( *c1 < *c2 ) return 1;
   if ( *c1 > *c2 ) return -1;
@@ -117,7 +117,7 @@ int i,j,k;
   for ( i=0; i<VarNr; i++ )
     for ( j=0; j<VarNr; j++ )
       structJ[i][j]=(i==j)?1:0;
-              
+
   for (i = 0; i < VarNr; i++)
     for (j = 0; j < VarNr; j++)
       for (k = 0; k < EqnNr; k++)
@@ -127,7 +127,7 @@ int i,j,k;
   for ( i=0; i<VarNr; i++ )
     for ( j=0; j<VarNr; j++ )
       LUstructJ[i][j]=structJ[i][j];
-              
+
 }
 
 int ComputeLUStructJ()
@@ -138,22 +138,22 @@ int nu,nl;
   for (j = 0; j < VarNr-1; j++) {
     for (i = j+1; i < VarNr; i++) {
       if( LUstructJ[i][j] ) {
-        for (k = j; k < VarNr; k++) 
+        for (k = j; k < VarNr; k++)
          /*   LUstructJ[i][k] += LUstructJ[j][k]; */
 	   if ( LUstructJ[j][k] != 0 )
-              LUstructJ[i][k] = 1; 
-      }   
+              LUstructJ[i][k] = 1;
+      }
     }
-  }  
+  }
 
-  
+
   nu = 0; nl = 0;
-  for (i = 0; i < VarNr; i++) 
+  for (i = 0; i < VarNr; i++)
     for (j = 0; j < VarNr; j++)
       if( LUstructJ[i][j] ) {
         if(i > j) nl++;
-        if(i <= j) nu++;     
-      }          
+        if(i <= j) nu++;
+      }
 
   return nu+nl;
 }
@@ -162,8 +162,7 @@ int LUnonZero()
 {
 CODE v[MAX_SPECIES];
 CODE *var;
-int i,j,k;
-int nu,nl;
+int i,j;
 
   var = v;
   if( Stru != bestStru ) {
@@ -173,10 +172,10 @@ int nu,nl;
   } else {
     var = bestStru;
   }
-          
+
   for (i = 0; i < VarNr; i++)
     for (j = 0; j < VarNr; j++)
-      LUstructJ[i][j] = structJ[ ReverseCode[var[i]] ][ ReverseCode[var[j]] ];  
+      LUstructJ[i][j] = structJ[ ReverseCode[var[i]] ][ ReverseCode[var[j]] ];
 
   return ComputeLUStructJ();
 }
@@ -185,12 +184,11 @@ void LinColSparsity()
 {
 int i,j,k;
 int nlin, ncol;
-FILE * fff;
 
   for ( i=0; i<VarNr; i++ )
     for ( j=0; j<VarNr; j++ )
       structJ[i][j]=(i==j)?1:0;
-              
+
   for (i = 0; i < VarNr; i++)
     for (j = 0; j < VarNr; j++)
       for (k = 0; k < EqnNr; k++)
@@ -207,17 +205,17 @@ FILE * fff;
     colStru[i] = 0;
     for (j = 0; j < VarNr; j++)
       colStru[i] += structJ[j][i];
-    colStru[i] *= linStru[i];  
+    colStru[i] *= linStru[i];
   }
 
   Stru = linStru;
   nlin = LUnonZero();
   Stru = colStru;
   ncol = LUnonZero();
-  if( nlin <= ncol ) { 
+  if( nlin <= ncol ) {
     Stru = linStru;
     LUnonZero();
-  } 
+  }
 }
 
 void BestSparsity()
@@ -230,7 +228,7 @@ int tmp;
 int s;
 
   UpdateStructJ();
-      
+
   for ( i=0; i<VarNr; i++ )
     bestStru[i] = Code[i];
 
@@ -246,27 +244,27 @@ int s;
       if( crt < best ) {
         best = crt;
         best_i = i;
-      }    
+      }
     }
     for ( i=0; i<VarNr; i++ ) {
       tmp = LUstructJ[s][i];
       LUstructJ[s][i] = LUstructJ[best_i][i];
-      LUstructJ[best_i][i] = tmp;      
-    }   
+      LUstructJ[best_i][i] = tmp;
+    }
     for ( i=0; i<VarNr; i++ ) {
       tmp = LUstructJ[i][s];
       LUstructJ[i][s] = LUstructJ[i][best_i];
-      LUstructJ[i][best_i] = tmp;      
-    }   
+      LUstructJ[i][best_i] = tmp;
+    }
     tmp = bestStru[s];
     bestStru[s] = bestStru[best_i];
     bestStru[best_i] = tmp;
-    
+
     for (i = s+1; i < VarNr; i++) {
       if( LUstructJ[i][s] ) {
-        for (k = s; k < VarNr; k++) 
+        for (k = s; k < VarNr; k++)
           LUstructJ[i][k] += LUstructJ[s][k];
-      }   
+      }
     }
   }
 
@@ -278,7 +276,7 @@ void ReorderSpecies( int criteria )
 CODE *var;
 CODE *fix;
 CODE *dummy;
-CODE *PrLo;
+/*CODE *PrLo;*/
 EQ_VECT *tmpStoich_Left;
 EQ_VECT *tmpStoich_Right;
 EQ_VECT *tmpStoich;
@@ -295,15 +293,15 @@ int dummyNr;
 
   switch( criteria ) {
     case UNSORT:   cmpVar = useJacobian ? CodeRCmp : CodeCmp;
-                   break;  
+                   break;
     case LINSORT:  cmpVar = useJacobian ? CodeSCmp : CodeCmp;
-                   Stru = linStru;  
-                   break;  
+                   Stru = linStru;
+                   break;
     case COLSORT:  cmpVar = useJacobian ? CodeSCmp : CodeCmp;
                    Stru = colStru;
-                   break;  
+                   break;
     case BESTSORT: cmpVar = useJacobian ? NoSort : CodeCmp;
-                   break;  
+                   break;
   }
 
   VarNr       = 0;
@@ -315,7 +313,7 @@ int dummyNr;
   var = (CODE*)malloc( SpcNr * sizeof(CODE) );
   fix = (CODE*)malloc( SpcNr * sizeof(CODE) );
   dummy = (CODE*)malloc( 5 * sizeof(CODE) );
-  PrLo  = (CODE*)malloc( EqnNr * sizeof(CODE) );
+  /*PrLo  = (CODE*)malloc( EqnNr * sizeof(CODE) );*/
   tmpStoich_Left = (EQ_VECT*)malloc( SpcNr * sizeof(EQ_VECT) );
   tmpStoich_Right = (EQ_VECT*)malloc( SpcNr * sizeof(EQ_VECT) );
   tmpStoich = (EQ_VECT*)malloc( SpcNr * sizeof(EQ_VECT) );
@@ -326,9 +324,9 @@ int dummyNr;
     switch( SpeciesTable[ Code[i] ].type ) {
       case VAR_SPC:  var[ VarNr++ ] = Code[ i ];
 		     break;
-      case FIX_SPC:  fix[ FixNr++ ] = Code[ i ]; 
+      case FIX_SPC:  fix[ FixNr++ ] = Code[ i ];
 		     break;
-      case DUMMY_SPC:dummy[ dummyNr++ ] = Code[ i ]; 
+      case DUMMY_SPC:dummy[ dummyNr++ ] = Code[ i ];
 		     break;
     }
   }
@@ -346,7 +344,7 @@ int dummyNr;
   } else {
     for( i = 0; i < SpcNr; i++ )
       var[i] = bestStru[i];
-  }  
+  }
   qsort( (void*)fix, FixNr, sizeof(CODE), cmpFix );
 
   for( i = 0; i < SpcNr; i++ ) {
@@ -368,7 +366,7 @@ int dummyNr;
     EqCopy( tmpStoich[ new ], Stoich[ k ] );
     Code[ k ] = tmpCode[ new ];
     Reactive[ k ] = tmpReact[ new ];
-    if( Reactive[ k ] ) VarActiveNr++; 
+    if( Reactive[ k ] ) VarActiveNr++;
     k++;
   }
   /*  for( i = 0; i < plNr; i++ ) {
@@ -410,7 +408,7 @@ int dummyNr;
   free( tmpStoich_Left );
   free( dummy );
   free( fix );
-  free( var );   
+  free( var );
 
   fflush(stdout);
 }
@@ -420,26 +418,26 @@ void  AllocInternalArrays( void )
 {
 int i;
 
-if ( (Stoich_Left =(float**)calloc(MAX_SPECIES,sizeof(float*)))==NULL ) 
+if ( (Stoich_Left =(float**)calloc(MAX_SPECIES,sizeof(float*)))==NULL )
     FatalError(-30,"Cannot allocate Stoich_Left.\n");
 
-for (i=0; i<MAX_SPECIES; i++)    
+for (i=0; i<MAX_SPECIES; i++)
     if ( (Stoich_Left[i] = (float*)calloc(MAX_EQN,sizeof(float)))==NULL ) {
         FatalError(-30,"Cannot allocate Stoich_Left[%d]",i,MAX_SPECIES);
     }
 
-if ( (Stoich_Right = (float**)calloc(MAX_SPECIES,sizeof(float*)))==NULL ) 
+if ( (Stoich_Right = (float**)calloc(MAX_SPECIES,sizeof(float*)))==NULL )
     FatalError(-30,"Cannot allocate Stoich_Right.\n");
 
-for (i=0; i<MAX_SPECIES; i++)    
+for (i=0; i<MAX_SPECIES; i++)
     if ( (Stoich_Right[i] = (float*)calloc(MAX_EQN,sizeof(float)))==NULL ) {
         FatalError(-30,"Cannot allocate Stoich_Right[%d].",i);
     }
 
-if ( (Stoich = (float**)calloc(MAX_SPECIES,sizeof(float*)))==NULL ) 
+if ( (Stoich = (float**)calloc(MAX_SPECIES,sizeof(float*)))==NULL )
     FatalError(-30,"Cannot allocate Stoich.\n");
 
-for (i=0; i<MAX_SPECIES; i++)    
+for (i=0; i<MAX_SPECIES; i++)
     if ( (Stoich[i] = (float*)calloc(MAX_EQN,sizeof(float)))==NULL ) {
         FatalError(-30,"Cannot allocate Stoich[%d].",i);
     }
@@ -453,57 +451,56 @@ void  AllocStructArrays( void )
 int i;
 
 
-if ( (structB = (int**)calloc(EqnNr,sizeof(int*)))==NULL ) 
+if ( (structB = (int**)calloc(EqnNr,sizeof(int*)))==NULL )
     FatalError(-30, "Cannot allocate structB.");
 
-for (i=0; i<EqnNr; i++)    
+for (i=0; i<EqnNr; i++)
     if ( (structB[i] =(int*) calloc(SpcNr,sizeof(int)))==NULL )
         FatalError(-30, "Cannot allocate structB[%d].\n",i);
-    
-if ( (structJ = (int**)calloc(SpcNr,sizeof(int*)))==NULL ) 
+
+if ( (structJ = (int**)calloc(SpcNr,sizeof(int*)))==NULL )
     FatalError(-30, "Cannot allocate structJ.");
 
-for (i=0; i<SpcNr; i++)    
-    if ( (structJ[i] =(int*) calloc(SpcNr,sizeof(int)))==NULL ) 
+for (i=0; i<SpcNr; i++)
+    if ( (structJ[i] =(int*) calloc(SpcNr,sizeof(int)))==NULL )
         FatalError(-30, "Cannot allocate structJ[%d].\n",i);
-    
-if ( (LUstructJ = (int**)calloc(SpcNr,sizeof(int*)))==NULL ) 
+
+if ( (LUstructJ = (int**)calloc(SpcNr,sizeof(int*)))==NULL )
     FatalError(-30, "Cannot allocate LUstructJ.");
 
-for (i=0; i<SpcNr; i++)    
-    if ( (LUstructJ[i] = (int*)calloc(SpcNr,sizeof(int)))==NULL ) 
+for (i=0; i<SpcNr; i++)
+    if ( (LUstructJ[i] = (int*)calloc(SpcNr,sizeof(int)))==NULL )
         FatalError(-30, "Cannot allocate LUstructJ[%d].\n",i);
 
 }
 
-/*******************************************************************/                    
+/*******************************************************************/
 int Postprocess( char * root )
 {
 char buf[ 200 ];
-char cmd[500];
-char cmdexe[500];
-static char tmpfile[] = "kppfile.tmp";
-FILE * fp;
+/*char cmd[500];*/
+/*char cmdexe[500];*/
+/*static char tmpfile[] = "kppfile.tmp";*/
 
   if ( useLang == MATLAB_LANG ) {
  /*  Add rate function definitions as internal functions to the Update_RCONST file*/
-    sprintf( buf, "cat %s_Update_RCONST.m %s_Rates.m > tmp; mv tmp %s_Update_RCONST.m;", 
-        root, root, root ); 
-    system( buf );	 
+    sprintf( buf, "cat %s_Update_RCONST.m %s_Rates.m > tmp; mv tmp %s_Update_RCONST.m;",
+        root, root, root );
+    system( buf );
   }
 
 /*    Postprocessing to replace parameter names by values in the declarations
   strcpy( cmd, "sed " );
-  sprintf( cmd, "%s -e 's/(NVAR)/(%d)/g'", cmd, VarNr );  
-  sprintf( cmd, "%s -e 's/(NFIX)/(%d)/g'", cmd, FixNr );  
-  sprintf( cmd, "%s -e 's/(NSPEC)/(%d)/g'", cmd,SpcNr );  
-  sprintf( cmd, "%s -e 's/(NREACT)/(%d)/g'", cmd, EqnNr );  
-  sprintf( cmd, "%s -e 's/(NONZERO)/(%d)/g'", cmd, Jac_NZ );  
-  sprintf( cmd, "%s -e 's/(LU_NONZERO)/(%d)/g'", cmd, LU_Jac_NZ );  
-  sprintf( cmd, "%s -e 's/(NHESS)/(%)/g'", cmd, Hess_NZ );  
-   
-  sprintf( buf, "%s_Function", rootFileName );  
-  switch( useLang ) { 
+  sprintf( cmd, "%s -e 's/(NVAR)/(%d)/g'", cmd, VarNr );
+  sprintf( cmd, "%s -e 's/(NFIX)/(%d)/g'", cmd, FixNr );
+  sprintf( cmd, "%s -e 's/(NSPEC)/(%d)/g'", cmd,SpcNr );
+  sprintf( cmd, "%s -e 's/(NREACT)/(%d)/g'", cmd, EqnNr );
+  sprintf( cmd, "%s -e 's/(NONZERO)/(%d)/g'", cmd, Jac_NZ );
+  sprintf( cmd, "%s -e 's/(LU_NONZERO)/(%d)/g'", cmd, LU_Jac_NZ );
+  sprintf( cmd, "%s -e 's/(NHESS)/(%)/g'", cmd, Hess_NZ );
+
+  sprintf( buf, "%s_Function", rootFileName );
+  switch( useLang ) {
     case F77_LANG: sprintf( buf, "%s.f", buf );
                  break;
     case F90_LANG: sprintf( buf, "%s.f90", buf );
@@ -512,23 +509,22 @@ FILE * fp;
                  break;
     case MATLAB_LANG: sprintf( buf, "%s.m", buf );
                  break;
-    default: printf("\n Language '%d' not implemented!\n",useLang); 
+    default: printf("\n Language '%d' not implemented!\n",useLang);
                  exit(1);
   }
-  sprintf( cmdexe, "%s %s > %s; mv %s %s;", cmd, buf, tmpfile, tmpfile, buf );  
+  sprintf( cmdexe, "%s %s > %s; mv %s %s;", cmd, buf, tmpfile, tmpfile, buf );
   printf("\n\nCMDEXE='%s'\n",cmdexe);
   system( cmdexe );
 */
-} 
- 
-/*******************************************************************/                    
+}
+
+/*******************************************************************/
 int main( int argc, char * argv[] )
 {
 int status;
 char name[ 200 ];
 char *p;
-int i,j;
-  
+
   AllocInternalArrays();
 
   p = getenv("KPP_HOME");
@@ -542,12 +538,12 @@ int i,j;
             strcpy( name, eqFileName );
             p = name + strlen(name);
             while( p > name ) {
-              if( *p == '.') { 
+              if( *p == '.') {
                 *p = '\0';
                 break;
               }
-              p--;  
-            } 
+              p--;
+            }
 	    rootFileName = name;
 	    break;
     default: FatalError(1,"\nUsage :"
@@ -559,15 +555,15 @@ int i,j;
   printf("\nKPP is parsing the equation file.");
   status = ParseEquationFile( argv[1] );
 
-  if( status ) FatalError(2,"%d errors and %d warnings encountered.", 
-                           nError, nWarning ); 
+  if( status ) FatalError(2,"%d errors and %d warnings encountered.",
+                           nError, nWarning );
   /* Allocate some internal data structures */
   AllocStructArrays();
 
   printf("\nKPP is computing Jacobian sparsity structure.");
   ReorderSpecies( UNSORT );
   if (useReorder==1){
-    BestSparsity(); 
+    BestSparsity();
     ReorderSpecies( BESTSORT );
     }
   UpdateStructJ();
@@ -577,14 +573,14 @@ int i,j;
 
   printf("\nKPP is starting the code generation.");
   Generate( rootFileName );
-  
+
   printf("\nKPP is starting the code post-processing.");
   Postprocess( rootFileName );
-  
+
   printf("\n\nKPP has succesfully created the model \"%s\".\n\n",rootFileName);
 
   if( nError ) exit(4);
   if( nWarning ) exit(5);
-  
+
   exit(0);
 }

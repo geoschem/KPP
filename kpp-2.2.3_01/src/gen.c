@@ -365,12 +365,13 @@ int  *lookat;
 int  *moni;
 char *snames[MAX_SPECIES];
 int  *trans;
-char *strans[MAX_SPECIES];
+/*char *strans[MAX_SPECIES];*/ /*jjb 12072017 defined but unused*/
 char *smass[MAX_ATOMS];
 char *seqn[MAX_EQN];
 char *bufeqn, *p;
 int dim;
 int flxind[MAX_EQN];
+int EqnString( int eq, char * buf );
 
 
   /* Allocate local data structures */
@@ -441,7 +442,7 @@ int flxind[MAX_EQN];
   for (i = 0; i < SpcNr; i++)
     if ( SpeciesTable[Code[i]].trans ) {
       trans[ntrans] = Index(i);
-      strans[ntrans] = SpeciesTable[Code[i]].name;
+      /*strans[ntrans] = SpeciesTable[Code[i]].name;*/ /*jjb 12072017 defined but unused*/
       ntrans++;
     }
 
@@ -671,10 +672,10 @@ int F_VAR, FSPLIT_VAR;
     }
     for (i = VarNr; i < VarNr; i++) {
       sum = Const(0);
-      for (j = 0; j < EqnNr; j++) 
+      for (j = 0; j < EqnNr; j++)
         sum = Add( sum, Mul( Const( Stoich[i][j] ), Elm( A, j ) ) );
       Assign( Elm( Vdot, i ), sum );
-    }    
+    }
 
   } else {
 
@@ -694,7 +695,7 @@ int F_VAR, FSPLIT_VAR;
     /* msl_20160421
     for (i = 0; i < VarNr; i++) {
       sum = Const(0);
-      for (j = 0; j < EqnNr; j++) 
+      for (j = 0; j < EqnNr; j++)
         sum = Add( sum, Mul( Const( Stoich_Left[i][j] ), Elm( A, j ) ) );
       Assign( Elm( D_VAR, i ), sum );
     }
@@ -740,14 +741,12 @@ int F_VAR, FSPLIT_VAR;
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 void GenerateFlux()
 {
-int i, j, k;
-int used;
-int l, m;
+int i, j;
 int FLUX_VAR;
 
   if( VarNr == 0 ) return;
-  
-  /*  if (useLang != MATLAB_LANG)  /* Matlab generates an additional file per function */
+
+  /*  if (useLang != MATLAB_LANG) */ /* Matlab generates an additional file per function */
   /*     UseFile( functionFile ); */
 
   FLUX_VAR = DefFnc( "Flux", 3, "calculate production & loss terms from reaction flux");
@@ -759,21 +758,21 @@ int FLUX_VAR;
 
   NewLines(1);
   WriteComment("Production function");
-  
+
   for (i = 0; i < VarNr; i++) {
     sum = Const(0);
-    for (j = 0; j < EqnNr; j++) 
+    for (j = 0; j < EqnNr; j++)
       sum = Add( sum, Mul( Const( Stoich_Right[i][j] ), Elm( RR, j ) ) );
     Assign( Elm( P_VAR, i ), sum );
   }
-  
+
   NewLines(1);
   WriteComment("Destruction function");
-  
+
   /* msl_20160421 */
   for (i = 0; i < VarNr; i++) {
     sum = Const(0);
-    for (j = 0; j < EqnNr; j++) 
+    for (j = 0; j < EqnNr; j++)
       sum = Add( sum, Mul( Const( Stoich_Left[i][j] ), Elm( RR, j ) ) );
     Assign( Elm( D_VAR, i ), sum );
   }
@@ -1849,7 +1848,7 @@ int *irow;
 int *icol;
 int *crow;
 int *diag;
-int nElm;
+/*int nElm;*/ /*jjb 12072017 defined but unused*/
 int ibgn, iend;
 int useLangOld;
 int dim;
@@ -1865,7 +1864,7 @@ int dim;
 
   useLangOld = useLang;
   useLang = C_LANG;
-  nElm = NonZero( LU, 0, VarNr, irow, icol, crow, diag );
+  /*nElm = NonZero( LU, 0, VarNr, irow, icol, crow, diag );*/ /*jjb 12072017 defined but unused*/
   useLang = useLangOld;
 
   UseFile( linalgFile );
@@ -1918,7 +1917,7 @@ int *irow;
 int *icol;
 int *crow;
 int *diag;
-int nElm;
+/*int nElm;*/ /*jjb 12072017 defined but unused*/
 int ibgn, iend;
 int useLangOld;
 int **pos;
@@ -1936,7 +1935,7 @@ int dim;
 
   useLangOld = useLang;
   useLang = C_LANG;
-  nElm = NonZero( LU, 0, VarNr, irow, icol, crow, diag );
+  /*nElm = NonZero( LU, 0, VarNr, irow, icol, crow, diag );*/ /*jjb 12072017 defined but unused*/
   useLang = useLangOld;
 
   UseFile( linalgFile );
@@ -2712,7 +2711,7 @@ int INITVAL;
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 void GenerateShuffle_user2kpp()
 {
-int i,k,l;
+int i,k;
 int Shuffle_user2kpp;
 
   UseFile( utilFile );
@@ -2720,7 +2719,7 @@ int Shuffle_user2kpp;
   Shuffle_user2kpp    = DefFnc( "Shuffle_user2kpp", 2, "function to copy concentrations from USER to KPP");
   FunctionBegin( Shuffle_user2kpp, V_USER, V );
 
-  k = 0;l = 0;
+  k = 0;
   for( i = 1; i < SpcNr; i++) {
     if( ReverseCode[i] < 0 ) {
       if( SpeciesTable[i].type == VAR_SPC ) k++;
@@ -2747,7 +2746,7 @@ int Shuffle_user2kpp;
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 void GenerateShuffle_kpp2user()
 {
-int i,k,l;
+int i,k;
 int Shuffle_kpp2user;
 
   UseFile( utilFile );
@@ -2755,7 +2754,7 @@ int Shuffle_kpp2user;
   Shuffle_kpp2user    = DefFnc( "Shuffle_kpp2user", 2, "function to restore concentrations from KPP to USER");
   FunctionBegin( Shuffle_kpp2user, V, V_USER );
 
-  k = 0; l = 0;
+  k = 0;
   for( i = 0; i < SpcNr; i++) {
     if( ReverseCode[i] < 0 ) {
       if( SpeciesTable[i].type == VAR_SPC ) k++;

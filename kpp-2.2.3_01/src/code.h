@@ -86,7 +86,7 @@ extern char * CommonName;
 
 void OpenFile( FILE **fpp, char *name, char * ext, char * identity );
 FILE * UseFile( FILE *fp );
- 
+
 typedef struct {
 		 char *name;
 		 int type;
@@ -109,10 +109,12 @@ void FlushThisBuf( char * buf );
 void NewLines( int n );
 void C_Inline( char *fmt, ... );
 void F77_Inline( char *fmt, ... );
+void F90_Inline( char *fmt, ... );
+void MATLAB_Inline( char *fmt, ... );
 void IncludeFile( char * fname );
 void IncludeCode( char *fmt, ... );
 void MapFunctionComment( int f, int *vars );
-      
+
 int DefineVariable( char * name, int t, int bt, int maxi, int maxj, char * comment );
 void FreeVariable( int n );
 
@@ -122,7 +124,7 @@ void FreeVariable( int n );
 #define DefmElm( name, bt, m, n, cmt ) DefineVariable( name, MELM, bt, m, n, cmt )
 #define DefeElm( name, cmt ) DefineVariable( name, EELM, 0, 0, 0, cmt )
 #define DefFnc( name, n, cmt ) DefineVariable( name, FNC, 0, n, 0, cmt )
-  
+
 typedef struct {
 		 int var;
 		 union {
