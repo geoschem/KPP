@@ -869,8 +869,14 @@ void GenerateJacReactantProd()
 {
 int i, j, k, l, m, JVRP_NZ, newrow;
 int F_STOIC;
-int crow_JVRP[MAX_EQN], icol_JVRP[MAX_EQN*MAX_SPECIES];
-int irow_JVRP[MAX_EQN*MAX_SPECIES];
+
+/* jjb_01072016 start */
+/*int crow_JVRP[MAX_EQN], icol_JVRP[MAX_EQN*MAX_SPECIES];
+  int irow_JVRP[MAX_EQN*MAX_SPECIES];*/
+int *crow_JVRP;
+int *icol_JVRP;
+int *irow_JVRP;
+/* jjb_01072016 end */
 
   if( VarNr == 0 ) return;
 
@@ -881,6 +887,13 @@ int irow_JVRP[MAX_EQN*MAX_SPECIES];
          if ( Stoich_Left[j][i] != 0 ) JVRP_NZ++;
     varTable[ NJVRP ]  -> value  = JVRP_NZ + 1;
   }
+
+/* jjb_01072016 start */
+/* Allocate temporary index arrays */
+  crow_JVRP = AllocIntegerVector(EqnNr + 1, "crow_JVRP in GenerateJacReactantProd");
+  icol_JVRP = AllocIntegerVector(JVRP_NZ + 1, "icol_JVRP in GenerateJacReactantProd");
+  irow_JVRP = AllocIntegerVector(JVRP_NZ + 1, "irow_JVRP in GenerateJacReactantProd");
+/* jjb_01072016 end */
 
   UseFile( stoichiomFile );
 
@@ -3079,6 +3092,7 @@ void Generate()
 {
 int i;
 int n;
+char suffix[3];
 
   VarStartNr = 0;
   FixStartNr = VarNr;
@@ -3094,15 +3108,23 @@ int n;
   outBuffer = outBuf;
 
   switch( useLang ) {
-    case F77_LANG: Use_F( rootFileName );
-                 break;
-    case F90_LANG: Use_F90( rootFileName );
-                 break;
-    case C_LANG: Use_C( rootFileName );
-                 break;
-    case MATLAB_LANG: Use_MATLAB( rootFileName );
-                 break;
-    default: printf("\n Language no '%s' unknown\n",useLang );
+    case F77_LANG:
+      Use_F( rootFileName );
+      sprintf( suffix, "f");
+      break;
+    case F90_LANG:
+      Use_F90( rootFileName );
+      sprintf( suffix, "f90");
+      break;
+    case C_LANG:
+      Use_C( rootFileName );
+      sprintf( suffix, "c");
+      break;
+    case MATLAB_LANG:
+      Use_MATLAB( rootFileName );
+      sprintf( suffix, "m");
+      break;
+    default: printf("\n Language no '%d' unknown\n",useLang );
   }
   printf("\nKPP is initializing the code generation.");
   InitGen();
@@ -3217,7 +3239,7 @@ int n;
     GenerateDJacDRcoeff();
   }
 
-  printf("\nKPP is generating the driver from %s.f90:", driver);
+  printf("\nKPP is generating the driver from %s.%s:", driver, suffix);
   printf("\n    - %s_Main",rootFileName);
 
   if ( (useLang == F77_LANG)||(useLang == F90_LANG)||(useLang == C_LANG) )
