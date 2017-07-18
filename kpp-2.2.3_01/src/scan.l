@@ -60,13 +60,13 @@
   char *yy_filename[ MAX_INCLUDE ];
   int yy_buf_level = 0;
   
-  char crtToken[100];
-  char nextToken[100];
+  char crtToken[300];
+  char nextToken[300];
   int crtTokType;
   int nextTokType;
   int crtLine;
-  char crtFile[100];
-  char crt_rate[100];
+  char crtFile[300];
+  char crt_rate[300];
 
   int oldnErr = 0;
 
