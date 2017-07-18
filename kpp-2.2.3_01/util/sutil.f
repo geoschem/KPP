@@ -1,4 +1,7 @@
-
+C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C
+C KppDecomp
+C
 C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       SUBROUTINE KppDecomp( JVS, IER )
 C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -11,20 +14,29 @@ C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       INTEGER  IER
       KPP_REAL JVS(KPP_LU_NONZERO), W(KPP_NVAR)
       INTEGER  k, kk, j, jj
-      KPP_REAL a 
+      KPP_REAL a
 
       IER = 0
       DO k=1,NVAR
-        IF ( JVS( LU_DIAG(k) ) .EQ. 0. ) THEN
-            IER = k
-            RETURN
-        END IF
+        ! < jjb_20170301:
+        !    don't check if real value == 0
+        ! IF ( JVS( LU_DIAG(k) ) .EQ. 0. ) THEN
+        !    IER = k
+        !    RETURN
+        !END IF
         DO kk = LU_CROW(k), LU_CROW(k+1)-1
               W( LU_ICOL(kk) ) = JVS(kk)
         END DO
         DO kk = LU_CROW(k), LU_DIAG(k)-1
             j = LU_ICOL(kk)
-            a = -W(j) / JVS( LU_DIAG(j) )
+            ! ... jjb_20170301 continued ...
+            IF ( ABS(JVS( LU_DIAG(J) )) .GT. 0. ) THEN
+               a = -W(j) / JVS( LU_DIAG(j) )
+            ELSE
+               IER = LU_DIAG(j)
+               RETURN
+            END IF
+            ! jjb_20170301 >
             W(j) = -a
             DO jj = LU_DIAG(j)+1, LU_CROW(j+1)-1
                W( LU_ICOL(jj) ) = W( LU_ICOL(jj) ) + a*JVS(jj)
@@ -37,6 +49,13 @@ C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       RETURN
       END
 
+C End of KppDecomp subroutine
+C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C
+C KppDecompCmplx
+C
 C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       SUBROUTINE KppDecompCmplx( JVS, IER )
 C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -52,7 +71,10 @@ C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
       IER = 0
       DO k=1,NVAR
-        IF ( JVS( LU_DIAG(k) ) .EQ. 0. ) THEN
+        ! jjb_20170301 following mz_rs_20050606:
+        !    don't check if real value == 0
+        ! IF ( JVS( LU_DIAG(k) ) .EQ. 0. ) THEN
+        IF ( ABS(JVS( LU_DIAG(k) )) .LT. TINY(0.) ) THEN
             IER = k
             RETURN
         END IF
@@ -74,6 +96,13 @@ C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       RETURN
       END
 
+C End of KppDecompCmplx subroutine
+C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C
+C KppSolveIndirect
+C
 C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       SUBROUTINE KppSolveIndirect( JVS, X )
 C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,9 +115,9 @@ C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       KPP_REAL JVS(KPP_LU_NONZERO), X(KPP_NVAR), sum
 
       DO i=1,NVAR
-         DO j = LU_CROW(i), LU_DIAG(i)-1 
+         DO j = LU_CROW(i), LU_DIAG(i)-1
              X(i) = X(i) - JVS(j)*X(LU_ICOL(j));
-	 END DO  
+	 END DO
       END DO
 
       DO i=NVAR,1,-1
@@ -98,10 +127,17 @@ C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	END DO
         X(i) = sum/JVS(LU_DIAG(i));
       END DO
-      
+
       RETURN
       END
 
+C End of KppSolveIndirect subroutine
+C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C
+C KppSolveCmplx
+C
 C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       SUBROUTINE KppSolveCmplx( JVS, X )
 C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -114,9 +150,9 @@ C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       DOUBLE COMPLEX JVS(KPP_LU_NONZERO), X(KPP_NVAR), sum
 
       DO i=1,NVAR
-         DO j = LU_CROW(i), LU_DIAG(i)-1 
+         DO j = LU_CROW(i), LU_DIAG(i)-1
              X(i) = X(i) - JVS(j)*X(LU_ICOL(j));
-	 END DO  
+	 END DO
       END DO
 
       DO i=NVAR,1,-1
@@ -126,6 +162,9 @@ C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	END DO
         X(i) = sum/JVS(LU_DIAG(i));
       END DO
-      
+
       RETURN
       END
+
+C End of KppSolveCmplx subroutine
+C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
