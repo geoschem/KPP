@@ -70,27 +70,27 @@ int Reactive[ MAX_SPECIES ];
 INLINE_KEY InlineKeys[] = { { F77_GLOBAL,   APPEND,  "F77_GLOBAL" },
                             { F77_INIT,   APPEND,  "F77_INIT" },
                             { F77_DATA,   APPEND,  "F77_DATA" },
-                            { F77_UTIL,   APPEND,  "F77_UTIL" }, 
-                            { F77_RATES, APPEND,  "F77_RATES" }, 
-                            { F77_RCONST, APPEND,  "F77_RCONST" }, 
+                            { F77_UTIL,   APPEND,  "F77_UTIL" },
+                            { F77_RATES, APPEND,  "F77_RATES" },
+                            { F77_RCONST, APPEND,  "F77_RCONST" },
 			    { F90_GLOBAL,   APPEND,  "F90_GLOBAL" },
                             { F90_INIT,   APPEND,  "F90_INIT" },
                             { F90_DATA,   APPEND,  "F90_DATA" },
                             { F90_UTIL,   APPEND,  "F90_UTIL" },
-                            { F90_RATES, APPEND,  "F90_RATES" }, 
-                            { F90_RCONST, APPEND,  "F90_RCONST" }, 
+                            { F90_RATES, APPEND,  "F90_RATES" },
+                            { F90_RCONST, APPEND,  "F90_RCONST" },
                             { C_GLOBAL,     APPEND,  "C_GLOBAL" },
                             { C_INIT,     APPEND,  "C_INIT" },
                             { C_DATA,     APPEND,  "C_DATA" },
                             { C_UTIL,     APPEND,  "C_UTIL" },
-                            { C_RATES,   APPEND,  "C_RATES" }, 
-                            { C_RCONST,   APPEND,  "C_RCONST" }, 
+                            { C_RATES,   APPEND,  "C_RATES" },
+                            { C_RCONST,   APPEND,  "C_RCONST" },
                             { MATLAB_GLOBAL,     APPEND,  "MATLAB_GLOBAL" },
                             { MATLAB_INIT,     APPEND,  "MATLAB_INIT" },
                             { MATLAB_DATA,     APPEND,  "MATLAB_DATA" },
                             { MATLAB_UTIL,     APPEND,  "MATLAB_UTIL" },
-                            { MATLAB_RATES,   APPEND,  "MATLAB_RATES" }, 
-                            { MATLAB_RCONST,   APPEND,  "MATLAB_RCONST" } 
+                            { MATLAB_RATES,   APPEND,  "MATLAB_RATES" },
+                            { MATLAB_RCONST,   APPEND,  "MATLAB_RCONST" }
 		 	  };
 
 int useAggregate   = 1;
@@ -106,9 +106,9 @@ int useEqntags     = 0;
 int useLang        = F77_LANG;
 int useStochastic  = 0;
 int doFlux         = 0;
-/* if useValues=1 KPP replaces parameters like NVAR etc. 
+/* if useValues=1 KPP replaces parameters like NVAR etc.
        by their values in vector/matrix declarations */
-int useDeclareValues = 0; 
+int useDeclareValues = 0;
 
 char integrator[ MAX_PATH ] = "none";
 char driver[ MAX_PATH ] = "none";
@@ -129,7 +129,7 @@ int crtAtomNr = 0;
 char *fileList[ MAX_FILES ];
 int fileNr = 0;
 
-double Abs( double x ) 
+double Abs( double x )
 {
   return x > 0 ? x : -x;
 }
@@ -395,12 +395,12 @@ void CmdFlux( char *cmd )
 int FindAtom( char *atname )
 {
 int i;
-  
+
   for( i=0; i<AtomNr; i++ )
     if( EqNoCase( AtomTable[ i ].name, atname ) ) {
-      return i;   
+      return i;
     }
-  return -1;      
+  return -1;
 }
 
 void DeclareAtom( char *atname )
@@ -416,7 +416,7 @@ int code;
     Error("Too many atoms");
     return;
   }
-  
+
   strcpy( AtomTable[ AtomNr ].name, atname );
   AtomTable[ AtomNr ].check = NO_CHECK;
   AtomTable[ AtomNr ].masscheck = 0;
@@ -438,11 +438,11 @@ int code;
 void CheckAll()
 {
 int i;
-  
+
   for( i=0; i<AtomNr; i++ ) {
     if( AtomTable[ i ].check != CANCEL_CHECK )
       AtomTable[ i ].check = DO_CHECK;
-  }   
+  }
   SetAtomType( "IGNORE", NO_CHECK );
 }
 
@@ -463,16 +463,16 @@ int code;
 int FindSpecies( char *spname )
 {
 int i;
-  
+
   for( i=0; i<SpeciesNr; i++ )
     if( EqNoCase( SpeciesTable[ i ].name, spname ) ) {
-      return i;   
+      return i;
     }
   for( i=0; i<2; i++ )
     if( EqNoCase( SpeciesTable[ MAX_SPECIES -1 - i ].name, spname ) ) {
-      return MAX_SPECIES -1 - i;   
+      return MAX_SPECIES -1 - i;
     }
-  return -1;      
+  return -1;
 }
 
 void StoreSpecies( int index, int type, char *spname )
@@ -489,8 +489,8 @@ int i;
  }
  /*msl*/
   strcpy( SpeciesTable[ index ].name, spname );
-  SpeciesTable[ index ].type = type; 
-  *SpeciesTable[ index ].ival = '\0'; 
+  SpeciesTable[ index ].type = type;
+  *SpeciesTable[ index ].ival = '\0';
   SpeciesTable[ index ].lookat = 0;
   SpeciesTable[ index ].moni = 0;
   SpeciesTable[ index ].trans = 0;
@@ -526,14 +526,14 @@ int code;
 int i;
 
   if( EqNoCase( spname, "VAR_SPEC" ) ) {
-    for( i = 0; i < SpeciesNr; i++ ) 
-      if( SpeciesTable[i].type == VAR_SPC ) 
+    for( i = 0; i < SpeciesNr; i++ )
+      if( SpeciesTable[i].type == VAR_SPC )
         SpeciesTable[i].type = type;
     return;
   }
   if( EqNoCase( spname, "FIX_SPEC" ) ) {
-    for( i = 0; i < SpeciesNr; i++ ) 
-      if( SpeciesTable[i].type == FIX_SPC ) 
+    for( i = 0; i < SpeciesNr; i++ )
+      if( SpeciesTable[i].type == FIX_SPC )
         SpeciesTable[i].type = type;
     return;
   }
@@ -548,14 +548,14 @@ int i;
     ScanError("Undefined species %s.", spname );
     return;
   }
-  SpeciesTable[ code ].type = type; 
+  SpeciesTable[ code ].type = type;
 }
 
 void AssignInitialValue( char *spname , char *spval )
 {
-int code;  
+int code;
 double cf;
-  
+
   if( EqNoCase( spname, "CFACTOR" ) ) {
     code = sscanf( spval, "%lg", &cf );
     if( code != 1 ) {
@@ -565,30 +565,30 @@ double cf;
     cfactor = cf;
     return;
   }
-  
+
   if( EqNoCase( spname, "VAR_SPEC" ) ) {
     strcpy( varDefault, spval );
     return;
   }
-  
-  
+
+
   if( EqNoCase( spname, "FIX_SPEC" ) ) {
     strcpy( fixDefault, spval );
     return;
   }
-  
+
   if( EqNoCase( spname, "ALL_SPEC" ) ) {
     strcpy( varDefault, spval );
     strcpy( fixDefault, spval );
     return;
   }
-  
+
   code = FindSpecies( spname );
   if ( code < 0 ) {
     ScanError("Undefined species %s.", spname );
-    return; 
-  }     
-  strcpy( SpeciesTable[ code ].ival, spval );  
+    return;
+  }
+  strcpy( SpeciesTable[ code ].ival, spval );
 }
 
 void StoreEquationRate( char *rate, char *label )
@@ -598,7 +598,7 @@ char buf[ MAX_K ];
 int n;
 KREACT *kreact;
 
-  kreact = &kr[ EqnNr ]; 
+  kreact = &kr[ EqnNr ];
   strcpy( kreact->label, label );
   if( isPhoto ) {
     kreact->type = PHOTO;
@@ -632,25 +632,25 @@ int err;
     Error("Too many equations");
     return;
   }
-  
+
   for( i = 0; i < AtomNr; i++ )
     atcnt[i] = 0;
-    
+
   for( spc = 0; spc < SpcNr; spc++ ) {
     sp = &SpeciesTable[ Code[spc] ];
     if( Stoich_Left[spc][EqnNr] != 0 ) {
-      for( i = 0; i < sp->nratoms; i++ )  
+      for( i = 0; i < sp->nratoms; i++ )
         atcnt[ sp->atoms[i].code ] += Stoich_Left[spc][EqnNr] * sp->atoms[i].nr;
     }
     if( Stoich_Right[spc][EqnNr] != 0 ) {
-      for( i = 0; i < sp->nratoms; i++ ) 
-        atcnt[ sp->atoms[i].code ] -= Stoich_Right[spc][EqnNr] * sp->atoms[i].nr; 
+      for( i = 0; i < sp->nratoms; i++ )
+        atcnt[ sp->atoms[i].code ] -= Stoich_Right[spc][EqnNr] * sp->atoms[i].nr;
     }
-  } 
-  
+  }
+
   *errmsg = 0;
   err = 0;
-  
+
   for( i = 0; i < AtomNr; i++ ) {
     if ( Abs( atcnt[i] ) > 1e-5 ) {
       if ( AtomTable[i].check == CANCEL_CHECK ) {
@@ -666,11 +666,11 @@ int err;
         continue;
       }
     }
-  } 
-   
-  if ( err ) 
-    ScanWarning( "(eqn %d) Atom balance mismatch for:%s.", EqnNr+1, errmsg );    
-        
+  }
+
+  if ( err )
+    ScanWarning( "(eqn %d) Atom balance mismatch for:%s.", EqnNr+1, errmsg );
+
   for( j = 0; j < SpcNr; j++ )
     if( Stoich_Left[j][EqnNr] != 0 )
       { index = j; break; }
@@ -700,7 +700,7 @@ int err;
 
 void ProcessTerm( int side, char *sign, char *coef, char *spname  )
 {
-int code;  
+int code;
 CODE crtSpec;
 double val;
 char buf[40];
@@ -713,7 +713,7 @@ char eqNr[40]; /* msl_270416 */
      strcpy( spstr, spname );
      strcat( spstr, eqNr );
      DeclareSpecies( PL_SPC, spstr );
-     /*printf("\nAdded species %s to %d (LHS=%d; RHS=%d)",spstr,side,LHS,RHS); /*msl*/
+     /*printf("\nAdded species %s to %d (LHS=%d; RHS=%d)",spstr,side,LHS,RHS);*/ /*msl*/
    }
    else {
      return;
@@ -728,7 +728,7 @@ char eqNr[40]; /* msl_270416 */
     ScanError("Undefined species %s.", spstr );
     return;
   }
-  
+
   crtSpec = ReverseCode[ code ];
 
   if(EqNoCase(spstr,"HV")) isPhoto = 1;
@@ -739,9 +739,9 @@ char eqNr[40]; /* msl_270416 */
     Code[ crtSpec ] = code;
     ReverseCode[ code ] = crtSpec;
   }
-  
-  strcpy( buf, sign ); 
-  strcat( buf, coef ); 
+
+  strcpy( buf, sign );
+  strcat( buf, coef );
   sscanf( buf, "%lf", &val );
 
   switch( side ) {
@@ -754,46 +754,46 @@ char eqNr[40]; /* msl_270416 */
 	      break;
   }
 }
-           
+
 void AddLumpSpecies( char *spname )
 {
-int code;  
-  
+int code;
+
   code = FindSpecies( spname );
   if ( code < 0 ) {
     ScanError("Undefined species %s.", spname );
     return;
   }
 
-  /* ... */                
+  /* ... */
 
 }
 
 void CheckLump( char *spname )
 {
-int code;  
-  
+int code;
+
   code = FindSpecies( spname );
   if ( code < 0 ) {
     ScanError("Undefined species %s.", spname );
     return;
   }
 
-  /* ... */                
+  /* ... */
 
 }
 
 void AddLookAt( char *spname )
 {
-int code;  
-  
+int code;
+
   code = FindSpecies( spname );
   if ( code < 0 ) {
     ScanError("Undefined species %s.", spname );
     return;
   }
 
-  SpeciesTable[ code ].lookat = 1;   
+  SpeciesTable[ code ].lookat = 1;
 }
 
 void LookAtAll()
@@ -801,39 +801,39 @@ void LookAtAll()
 int i;
 
   for( i=0; i<SpeciesNr; i++ )
-    SpeciesTable[ i ].lookat = 1;  
+    SpeciesTable[ i ].lookat = 1;
 }
 
 void AddMonitor( char *spname )
 {
-int code;  
-  
+int code;
+
   code = FindSpecies( spname );
   if ( code >= 0 ) {
     SpeciesTable[ code ].moni = 1;
     return;
-  } 
-  
+  }
+
   code = FindAtom( spname );
   if ( code >= 0 ) {
     AtomTable[ code ].masscheck = 1;
     return;
   }
-    
+
   ScanError("Undefined species or atom %s.", spname );
 }
 
 void AddTransport( char *spname )
 {
-int code;  
-  
+int code;
+
   code = FindSpecies( spname );
   if ( code < 0 ) {
     ScanError("Undefined species %s.", spname );
     return;
   }
 
-  SpeciesTable[ code ].trans = 1;   
+  SpeciesTable[ code ].trans = 1;
 }
 
 void TransportAll()
@@ -841,7 +841,7 @@ void TransportAll()
 int i;
 
   for( i=0; i<SpeciesNr; i++ )
-    SpeciesTable[ i ].trans = 1;  
+    SpeciesTable[ i ].trans = 1;
 }
 
 void AddUseFile( char *fname )
@@ -851,27 +851,25 @@ void AddUseFile( char *fname )
   fileNr++;
 }
 
-char * AppendString( char * s1, char * s2, int * maxlen, int addlen ) 
+char * AppendString( char * s1, char * s2, int * maxlen, int addlen )
 {
-char * tmp;
 
   *maxlen += addlen;
 
   if( !s1 ) {
     s1 = (char*)malloc( *maxlen );
     *s1 = 0;
-  }    
-  
+  }
+
   if( strlen( s1 ) + strlen( s2 ) >= *maxlen ) {
     s1 = (char*)realloc( (void*)s1, *maxlen );
   }
-  strcat( s1, s2 ); 
+  strcat( s1, s2 );
   return s1;
 }
 
-char * ReplaceString( char * s1, char * s2, int * maxlen, int addlen ) 
+char * ReplaceString( char * s1, char * s2, int * maxlen, int addlen )
 {
-char * tmp;
 
   if( s1 ) free(s1);
 
@@ -887,10 +885,10 @@ void AddInlineCode( char * ctx, char * s )
 ICODE * c;
 int i, key, type;
 int totallength; /* mz_rs_20050607 */
-  
+
   c = NULL;
-  
-  for( i = 0; i < INLINE_OPT; i++ ) 
+
+  for( i = 0; i < INLINE_OPT; i++ )
     if( EqNoCase( ctx, InlineKeys[i].kname ) ) {
       key = InlineKeys[i].key;
       c = &InlineCode[key];
@@ -903,13 +901,13 @@ int totallength; /* mz_rs_20050607 */
   }
 
   /*  mz_rs_20050607+ */
-  if (c->code) 
+  if (c->code)
     totallength = strlen( c->code )+strlen( s );
   else
     totallength = strlen( s );
   if (totallength>MAX_INLINE)
-    ScanError("\nInline code for %s is too long (%d>%d).\nIncrease MAX_INLINE in scan.h and recompile kpp!", 
-              ctx, totallength, MAX_INLINE);    
+    ScanError("\nInline code for %s is too long (%d>%d).\nIncrease MAX_INLINE in scan.h and recompile kpp!",
+              ctx, totallength, MAX_INLINE);
   /*  mz_rs_20050607- */
 
   switch( type ) {
@@ -939,18 +937,18 @@ int code;
   for( i = 0; i < MAX_SPECIES; i++ ) {
     SpeciesTable[ i ].nratoms = 0;
   }
-  
+
   for( i = 0; i < INLINE_OPT; i++ ) {
     InlineCode[i].code = NULL;
     InlineCode[i].maxlen = 0;
-  }  
-  
+  }
+
   EqnNr = 0;
   SpcNr = 0;
-  
-  DeclareAtom( "CANCEL" );   
+
+  DeclareAtom( "CANCEL" );
   SetAtomType( "CANCEL", CANCEL_CHECK );
-  DeclareAtom( "IGNORE" );   
+  DeclareAtom( "IGNORE" );
   SetAtomType( "IGNORE", NO_CHECK );
   DeclareSpecies( DUMMY_SPC, "???" );
   StoreSpecies( MAX_SPECIES-1, DUMMY_SPC, "HV" );
