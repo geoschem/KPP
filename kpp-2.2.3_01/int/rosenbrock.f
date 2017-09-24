@@ -25,8 +25,9 @@
      
       IPAR(1) = 0       ! non-autonomous
       IPAR(2) = 1       ! vector tolerances
-      RPAR(3) = STEPMIN ! starting step
       IPAR(4) = 5       ! choice of the method
+      RPAR(1) = SPACING(MIN(TIN,TOUT)) ! Hmin is defined so that T + Hmin /= T
+      RPAR(3) = STEPMIN ! starting step
 
       CALL Rosenbrock(VAR,TIN,TOUT,
      &            ATOL,RTOL,
@@ -201,8 +202,8 @@
       PARAMETER (DeltaMin = 1.0d-5)
 !~~~>   Functions
       EXTERNAL FunTemplate, JacTemplate
-      KPP_REAL WLAMCH
-      EXTERNAL WLAMCH
+      !KPP_REAL WLAMCH ! jjb: WLAMCH now replaced by Fortran intrinsic function epsilon
+      !EXTERNAL WLAMCH
 !~~~>  Initialize statistics
       Nfun = IPAR(11)
       Njac = IPAR(12)
@@ -229,7 +230,7 @@
 !~~~>   The maximum number of steps admitted
       IF (IPAR(3).EQ.0) THEN
          Max_no_steps = 100000
-      ELSEIF (Max_no_steps.GT.0) THEN
+      ELSEIF (IPAR(3).GT.0) THEN
          Max_no_steps=IPAR(3)
       ELSE 
          WRITE(6,*)'User-selected max no. of steps: IPAR(3)=',IPAR(3)
@@ -243,13 +244,14 @@
       ELSEIF ( (IPAR(4).GE.1).AND.(IPAR(4).LE.5) ) THEN
          Method = IPAR(4)
       ELSE  
-         WRITE (6,*) 'User-selected Rosenbrock method: IPAR(4)=', Method
+         WRITE (6,*) 'User-selected Rosenbrock method: IPAR(4)=',IPAR(4)
          CALL ros_ErrorMsg(-2,Tstart,ZERO,IERR)
 	 RETURN         
       END IF
       
 !~~~>  Unit roundoff (1+Roundoff>1)  
-      Roundoff = WLAMCH('E')
+!      Roundoff = WLAMCH('E')
+      Roundoff = epsilon(ONE) ! jjb fortran intrinsic function
 
 !~~~>  Lower bound on the step size: (positive value)
       IF (RPAR(1).EQ.ZERO) THEN
@@ -447,8 +449,8 @@
       PARAMETER (ONE  = 1.0d0)
       PARAMETER (DeltaMin = 1.0d-5)
 !~~~>  Locally called functions
-      KPP_REAL WLAMCH, ros_ErrorNorm
-      EXTERNAL WLAMCH, ros_ErrorNorm
+      KPP_REAL ros_ErrorNorm
+      EXTERNAL ros_ErrorNorm
 !~~~>  Statistics on the work performed
       INTEGER Nfun,Njac,Nstp,Nacc,Nrej,Ndec,Nsol,Nsng
       COMMON /Statistics/ Nfun,Njac,Nstp,Nacc,Nrej,
@@ -475,14 +477,21 @@
 
 !~~~> Time loop begins below
 
-      DO WHILE ( (Direction.GT.0).AND.((T-Tend)+Roundoff.LE.ZERO)
-     &     .OR. (Direction.LT.0).AND.((Tend-T)+Roundoff.LE.ZERO) )
+! jjb simpler is better
+!      DO WHILE ( (Direction.GT.0).AND.((T-Tend)+Roundoff.LE.ZERO)
+!     &     .OR. (Direction.LT.0).AND.((Tend-T)+Roundoff.LE.ZERO) )
+      DO WHILE (ABS(Tend-T).GE.Roundoff)
 
       IF ( Nstp.GT.Max_no_steps ) THEN  ! Too many steps
 	CALL ros_ErrorMsg(-6,T,H,IERR)
 	RETURN
       END IF
-      IF ( ((T+0.1d0*H).EQ.T).OR.(H.LE.Roundoff) ) THEN  ! Step size too small
+
+! jjb: use intrinsic Fortran function "spacing",
+!      which should result in a more accurate test (differences will occur if
+!      0.1*H < spacing(T) <= H
+!      IF ( ((T+0.1d0*H).EQ.T).OR.(H.LE.Roundoff) ) THEN  ! Step size too small
+      IF ( (H.LT.SPACING(T)).OR.(H.LE.Roundoff) ) THEN  ! Step size too small
 	CALL ros_ErrorMsg(-7,T,H,IERR)
 	RETURN
       END IF
@@ -522,41 +531,51 @@
 
 	 ! For the 1st istage the function has been computed previously
 	 IF ( istage.EQ.1 ) THEN
-	   CALL WCOPY(KPP_NVAR,Fcn0,1,Fcn,1)
+	   !slim: CALL WCOPY(KPP_NVAR,Fcn0,1,Fcn,1)
+           Fcn = Fcn0
 	 ! istage>1 and a new function evaluation is needed at the current istage
 	 ELSEIF ( ros_NewF(istage) ) THEN
-	   CALL WCOPY(KPP_NVAR,Y,1,Ynew,1)
+	   !slim: CALL WCOPY(KPP_NVAR,Y,1,Ynew,1)
+	   Ynew = Y
 	   DO j = 1, istage-1
 	     CALL WAXPY(KPP_NVAR,ros_A((istage-1)*(istage-2)/2+j),
-     &                  K(KPP_NVAR*(j-1)+1),1,Ynew,1)
+     &                  K(KPP_NVAR*(j-1)+1:KPP_NVAR*j),1,Ynew,1)
 	   END DO
 	   Tau = T + ros_Alpha(istage)*Direction*H
            CALL FunTemplate(Tau,Ynew,Fcn)
 	 END IF ! if istage.EQ.1 elseif ros_NewF(istage)
-	 CALL WCOPY(KPP_NVAR,Fcn,1,K(ioffset+1),1)
-	 DO j = 1, istage-1
-	   HC = ros_C((istage-1)*(istage-2)/2+j)/(Direction*H)
-	   CALL WAXPY(KPP_NVAR,HC,K(KPP_NVAR*(j-1)+1),1,K(ioffset+1),1)
-	 END DO
+	 !slim: CALL WCOPY(KPP_NVAR,Fcn,1,K(ioffset+1),1)
+         K(ioffset+1:ioffset+KPP_NVAR) = Fcn
+         DO j = 1, istage-1
+           HC = ros_C((istage-1)*(istage-2)/2+j)/(Direction*H)
+           CALL WAXPY(KPP_NVAR,HC,K(KPP_NVAR*(j-1)+1:KPP_NVAR*j),1,
+     &                K(ioffset+1:ioffset+KPP_NVAR),1)
+         END DO
          IF ((.NOT. Autonomous).AND.(ros_Gamma(istage).NE.ZERO)) THEN
            HG = Direction*H*ros_Gamma(istage)
-	   CALL WAXPY(KPP_NVAR,HG,dFdT,1,K(ioffset+1),1)
+!	   CALL WAXPY(KPP_NVAR,HG,dFdT,1,K(ioffset+1),1)
+           CALL WAXPY(KPP_NVAR,HG,dFdT,1,
+     &                K(ioffset+1:ioffset+KPP_NVAR),1)
          END IF
-         CALL SolveTemplate(Ghimj, Pivot, K(ioffset+1))
+         CALL SolveTemplate(Ghimj, Pivot, K(ioffset+1:ioffset+KPP_NVAR))
 
       END DO  ! istage
 
 
 !~~~>  Compute the new solution
-      CALL WCOPY(KPP_NVAR,Y,1,Ynew,1)
+      !slim: CALL WCOPY(KPP_NVAR,Y,1,Ynew,1)
+      Ynew = Y
       DO j=1,ros_S
-	 CALL WAXPY(KPP_NVAR,ros_M(j),K(KPP_NVAR*(j-1)+1),1,Ynew,1)
+	 CALL WAXPY(KPP_NVAR,ros_M(j),
+     &              K(KPP_NVAR*(j-1)+1:KPP_NVAR*j),1,Ynew,1)
       END DO
 
 !~~~>  Compute the error estimation
-      CALL WSCAL(KPP_NVAR,ZERO,Yerr,1)
+      !slim: CALL WSCAL(KPP_NVAR,ZERO,Yerr,1)
+      Yerr(1:KPP_NVAR) = ZERO
       DO j=1,ros_S
-	CALL WAXPY(KPP_NVAR,ros_E(j),K(KPP_NVAR*(j-1)+1),1,Yerr,1)
+	 CALL WAXPY(KPP_NVAR,ros_E(j),
+     &              K(KPP_NVAR*(j-1)+1:KPP_NVAR*j),1,Yerr,1)
       END DO
       Err = ros_ErrorNorm ( Y, Ynew, Yerr, AbsTol, RelTol, VectorTol )
 
@@ -568,7 +587,8 @@
       Nstp = Nstp+1
       IF ( (Err.LE.ONE).OR.(H.LE.Hmin) ) THEN  !~~~> Accept step
          Nacc = Nacc+1
-	 CALL WCOPY(KPP_NVAR,Ynew,1,Y,1)
+	 !slim: CALL WCOPY(KPP_NVAR,Ynew,1,Y,1)
+         Y = Ynew
          T = T + Direction*H
 	 Hnew = MAX(Hmin,MIN(Hnew,Hmax))
          IF (RejectLastH) THEN  ! No step size increase after a rejected step
@@ -580,7 +600,8 @@
 	 GOTO 101  ! EXIT THE LOOP: WHILE STEP NOT ACCEPTED
       ELSE                 !~~~> Reject step
          IF (RejectMoreH) THEN
-	    Hnew=H*FacRej
+!	    Hnew=H*FacRej
+            Hnew=MAX(Hmin,H*FacRej) ! FacRej is small (~0.1) so need to check that Hnew is not too small
 	 END IF
          RejectMoreH = RejectLastH
          RejectLastH = .TRUE.
@@ -659,7 +680,8 @@
       Delta = SQRT(Roundoff)*MAX(DeltaMin,ABS(T))
       CALL FunTemplate(T+Delta,Y,dFdT)
       CALL WAXPY(KPP_NVAR,(-ONE),Fcn0,1,dFdT,1)
-      CALL WSCAL(KPP_NVAR,(ONE/Delta),dFdT,1)
+      !slim: CALL WSCAL(KPP_NVAR,(ONE/Delta),dFdT,1)
+      dFdT = (ONE/Delta) * dFdT
 
       RETURN
       END ! SUBROUTINE ros_FunTimeDerivative
@@ -704,8 +726,9 @@
       DO WHILE (Singular)
       
 !~~~>    Construct Ghimj = 1/(H*ham) - Jac0
-        CALL WCOPY(KPP_LU_NONZERO,Jac0,1,Ghimj,1)
-        CALL WSCAL(KPP_LU_NONZERO,(-ONE),Ghimj,1)
+        !slim: CALL WCOPY(KPP_LU_NONZERO,Jac0,1,Ghimj,1)
+        !slim: CALL WSCAL(KPP_LU_NONZERO,(-ONE),Ghimj,1)
+        Ghimj = -Jac0
         ghinv = ONE/(Direction*H*gam)
         DO i=1,KPP_NVAR
           Ghimj(LU_DIAG(i)) = Ghimj(LU_DIAG(i))+ghinv
