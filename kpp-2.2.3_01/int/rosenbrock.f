@@ -16,6 +16,25 @@
       INTEGER  IPAR(20)
       EXTERNAL  FunTemplate, JacTemplate
 
+! jjb>
+!
+! the following lines are "hardcoded" in KPP_HOME/int/rosenbrock.f
+!
+! settings & values are from rvg
+c rvg>
+c copied from ros3.def 
+!      STEPMIN = 1.d-30
+!      STEPMAX = MIN(10.d0,(TOUT - TIN))
+!      ISNOTAUTONOM=1 ! jjb non longer needed with KPP-2.x, this is the default case (IPAR(1) = 0, see below)
+c      STEPSTART=STEPMIN
+!      STEPSTART=1.d-3
+      do i=1,NVAR
+         RTOL(i) = 1.d-3
+         ATOL(i) = 1.d-25
+      enddo
+c <rvg
+! <jjb
+
 
       DO i=1,20
         IPAR(i) = 0
@@ -25,9 +44,11 @@
      
       IPAR(1) = 0       ! non-autonomous
       IPAR(2) = 1       ! vector tolerances
-      IPAR(4) = 5       ! choice of the method
+!     IPAR(4) = 5       ! choice of the method
+      IPAR(4) = 2       ! choice of the method ! jjb ros 3 choice for mistra
       RPAR(1) = SPACING(MIN(TIN,TOUT)) ! Hmin is defined so that T + Hmin /= T
-      RPAR(3) = STEPMIN ! starting step
+!     RPAR(3) = STEPMIN ! starting step
+      RPAR(3) = 1.d-3   ! starting step       ! jjb change following RvG settings for mistra
 
       CALL Rosenbrock(VAR,TIN,TOUT,
      &            ATOL,RTOL,
