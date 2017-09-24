@@ -10,7 +10,7 @@
 
 
 !--------------------------------------------------------------
-      SUBROUTINE  WCOPY(N,X,incX,Y,incY)
+      SUBROUTINE WCOPY(N,X,incX,Y,incY)
 !--------------------------------------------------------------
 !     copies a vector, x, to a vector, y:  y <- x
 !     only for incX=incY=1
@@ -18,7 +18,7 @@
 !     replace this by the function from the optimized BLAS implementation:
 !         CALL  SCOPY(N,X,1,Y,1)   or   CALL  DCOPY(N,X,1,Y,1)
 !--------------------------------------------------------------
-      
+
       INTEGER i,incX,incY,M,MP1,N
       KPP_REAL X(N),Y(N)
 
@@ -45,6 +45,7 @@
       RETURN
       END
 
+! End of WCOPY
 
 !--------------------------------------------------------------
       SUBROUTINE WAXPY(N,Alpha,X,incX,Y,incY)
@@ -81,12 +82,12 @@
       RETURN
       END
 
-
+! End of WAXPY
 
 !--------------------------------------------------------------
       SUBROUTINE WSCAL(N,Alpha,X,incX)
 !--------------------------------------------------------------
-!     constant times a vector: x(1:N) <- Alpha*x(1:N) 
+!     constant times a vector: x(1:N) <- Alpha*x(1:N)
 !     only for incX=incY=1
 !     after BLAS
 !     replace this by the function from the optimized BLAS implementation:
@@ -148,6 +149,8 @@
       RETURN
       END
 
+! End of WSCAL
+
 !--------------------------------------------------------------
       KPP_REAL FUNCTION WLAMCH( C )
 !--------------------------------------------------------------
@@ -165,7 +168,7 @@
       LOGICAL   First
       SAVE     First, Eps
       DATA     First /.TRUE./
-      
+
       IF (First) THEN
         First = .FALSE.
         Eps = HALF**(16)
@@ -177,19 +180,21 @@
         PRINT*,'ERROR IN WLAMCH. EPS < ',Eps
         RETURN
 10      Eps = Eps*2
-        i = i-1      
+        i = i-1
       END IF
 
       WLAMCH = Eps
 
       RETURN
       END
-     
+
       SUBROUTINE WLAMCH_ADD( A, B, Suma )
       KPP_REAL A, B, Suma
       Suma = A + B
       RETURN
       END
+
+! End of WLAMCH
 
 !--------------------------------------------------------------
       SUBROUTINE SET2ZERO(N,Y)
@@ -197,7 +202,7 @@
 !     copies zeros into the vector y:  y <- 0
 !     after BLAS
 !--------------------------------------------------------------
-      
+
       INTEGER   i,M,MP1,N
       KPP_REAL  Y(N)
 
@@ -209,7 +214,7 @@
           Y(i) = 0.0d0
         END DO
         IF( N .LT. 8 ) RETURN
-      END IF    
+      END IF
       MP1 = M+1
       DO i = MP1,N,8
         Y(i)     = 0.0d0
@@ -224,11 +229,12 @@
 
       END SUBROUTINE SET2ZERO
 
+! End of SET2ZERO
 
 !--------------------------------------------------------------
-      KPP_REAL FUNCTION WDOT (N, DX, incX, DY, incY) 
+      KPP_REAL FUNCTION WDOT (N, DX, incX, DY, incY)
 !--------------------------------------------------------------
-!     dot produce: wdot = x(1:N)*y(1:N) 
+!     dot produce: wdot = x(1:N)*y(1:N)
 !     only for incX=incY=1
 !     after BLAS
 !     replace this by the function from the optimized BLAS implementation:
@@ -238,54 +244,55 @@
 !--------------------------------------------------------------
       IMPLICIT NONE
       INTEGER  N, incX, incY
-      KPP_REAL DX(N), DY(N) 
+      KPP_REAL DX(N), DY(N)
 
       INTEGER  i, IX, IY, M, MP1, NS
-                                 
-      WDOT = 0.0D0 
-      IF (N .LE. 0) RETURN 
-      IF (incX .EQ. incY) IF (incX-1) 5,20,60 
-!                                                                       
-!     Code for unequal or nonpositive increments.                       
-!                                                                       
-    5 IX = 1 
-      IY = 1 
-      IF (incX .LT. 0) IX = (-N+1)*incX + 1 
-      IF (incY .LT. 0) IY = (-N+1)*incY + 1 
-      DO i = 1,N 
-        WDOT = WDOT + DX(IX)*DY(IY) 
-        IX = IX + incX 
-        IY = IY + incY 
-      END DO 
-      RETURN 
-!                                                                       
-!     Code for both increments equal to 1.                              
-!                                                                       
-!     Clean-up loop so remaining vector length is a multiple of 5.      
-!                                                                       
-   20 M = MOD(N,5) 
-      IF (M .EQ. 0) GO TO 40 
-      DO i = 1,M 
-         WDOT = WDOT + DX(i)*DY(i) 
-      END DO 
-      IF (N .LT. 5) RETURN 
-   40 MP1 = M + 1 
-      DO i = MP1,N,5 
-          WDOT = WDOT + DX(i)*DY(i) 
-     &            + DX(i+1)*DY(i+1) + DX(i+2)*DY(i+2) 
-     &            + DX(i+3)*DY(i+3) + DX(i+4)*DY(i+4)                   
-      END DO 
-      RETURN 
-!                                                                       
-!     Code for equal, positive, non-unit increments.                    
-!                                                                       
-   60 NS = N*incX 
-      DO i = 1,NS,incX 
-        WDOT = WDOT + DX(i)*DY(i) 
-      END DO 
 
-      END FUNCTION WDOT                                          
+      WDOT = 0.0D0
+      IF (N .LE. 0) RETURN
+      IF (incX .EQ. incY) IF (incX-1) 5,20,60
+!
+!     Code for unequal or nonpositive increments.
+!
+    5 IX = 1
+      IY = 1
+      IF (incX .LT. 0) IX = (-N+1)*incX + 1
+      IF (incY .LT. 0) IY = (-N+1)*incY + 1
+      DO i = 1,N
+        WDOT = WDOT + DX(IX)*DY(IY)
+        IX = IX + incX
+        IY = IY + incY
+      END DO
+      RETURN
+!
+!     Code for both increments equal to 1.
+!
+!     Clean-up loop so remaining vector length is a multiple of 5.
+!
+   20 M = MOD(N,5)
+      IF (M .EQ. 0) GO TO 40
+      DO i = 1,M
+         WDOT = WDOT + DX(i)*DY(i)
+      END DO
+      IF (N .LT. 5) RETURN
+   40 MP1 = M + 1
+      DO i = MP1,N,5
+          WDOT = WDOT + DX(i)*DY(i)
+     &            + DX(i+1)*DY(i+1) + DX(i+2)*DY(i+2)
+     &            + DX(i+3)*DY(i+3) + DX(i+4)*DY(i+4)
+      END DO
+      RETURN
+!
+!     Code for equal, positive, non-unit increments.
+!
+   60 NS = N*incX
+      DO i = 1,NS,incX
+        WDOT = WDOT + DX(i)*DY(i)
+      END DO
 
+      END FUNCTION WDOT
+
+! End of WDOT
 
 !--------------------------------------------------------------
       SUBROUTINE WADD(N,X,Y,Z)
@@ -293,7 +300,7 @@
 !     adds two vectors: z <- x + y
 !     BLAS - like
 !--------------------------------------------------------------
-      
+
       INTEGER  i, M, MP1, N
       KPP_REAL  X(N),Y(N),Z(N)
 
@@ -305,7 +312,7 @@
             Z(i) = X(i) + Y(i)
          END DO
          IF( N .LT. 5 ) RETURN
-      END IF    
+      END IF
       MP1 = M+1
       DO i = MP1,N,5
          Z(i)     = X(i)     + Y(i)
@@ -316,4 +323,6 @@
       END DO
 
       END SUBROUTINE WADD
+
+! End of WADD
 !--------------------------------------------------------------
