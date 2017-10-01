@@ -68,7 +68,7 @@ maintainer-clean: clean
 
 lex.yy.c: scan.l scan.h
 	@echo "  "$(FLEX) scan.l
-	@$(FLEX) -olex.yy.c scan.l 
+	@$(FLEX) -o lex.yy.c scan.l 
 
 y.tab.c: scan.y scan.h
 	@echo "  "$(BISON) scan.y

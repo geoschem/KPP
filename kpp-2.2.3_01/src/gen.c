@@ -1848,7 +1848,7 @@ int *irow;
 int *icol;
 int *crow;
 int *diag;
-/*int nElm;*/ /*jjb 12072017 defined but unused*/
+int nElm;
 int ibgn, iend;
 int useLangOld;
 int dim;
@@ -1864,7 +1864,9 @@ int dim;
 
   useLangOld = useLang;
   useLang = C_LANG;
-  /*nElm = NonZero( LU, 0, VarNr, irow, icol, crow, diag );*/ /*jjb 12072017 defined but unused*/
+  nElm = NonZero( LU, 0, VarNr, irow, icol, crow, diag );*/ /*jjb 01102017 nElm is not used but */
+                                    /*   icol, crow and diag are defined when calling NonZero */ 
+
   useLang = useLangOld;
 
   UseFile( linalgFile );
@@ -1917,7 +1919,7 @@ int *irow;
 int *icol;
 int *crow;
 int *diag;
-/*int nElm;*/ /*jjb 12072017 defined but unused*/
+int nElm;
 int ibgn, iend;
 int useLangOld;
 int **pos;
@@ -1935,7 +1937,8 @@ int dim;
 
   useLangOld = useLang;
   useLang = C_LANG;
-  /*nElm = NonZero( LU, 0, VarNr, irow, icol, crow, diag );*/ /*jjb 12072017 defined but unused*/
+  nElm = NonZero( LU, 0, VarNr, irow, icol, crow, diag ); /*jjb 01102017 nElm is not used but */
+                                    /*   icol, crow and diag are defined when calling NonZero */ 
   useLang = useLangOld;
 
   UseFile( linalgFile );

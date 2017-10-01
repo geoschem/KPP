@@ -19,7 +19,7 @@
 !         CALL  SCOPY(N,X,1,Y,1)   or   CALL  DCOPY(N,X,1,Y,1)
 !--------------------------------------------------------------
 !     USE KPP_ROOT_Precision
-      
+
       INTEGER  :: i,incX,incY,M,MP1,N
       KPP_REAL :: X(N),Y(N)
 
@@ -31,7 +31,7 @@
           Y(i) = X(i)
         END DO
         IF( N .LT. 8 ) RETURN
-      END IF    
+      END IF
       MP1 = M+1
       DO i = MP1,N,8
         Y(i) = X(i)
@@ -78,7 +78,7 @@
         Y(i + 2) = Y(i + 2) + Alpha*X(i + 2)
         Y(i + 3) = Y(i + 3) + Alpha*X(i + 3)
       END DO
-      
+
       END SUBROUTINE WAXPY
 
 
@@ -86,7 +86,7 @@
 !--------------------------------------------------------------
       SUBROUTINE WSCAL(N,Alpha,X,incX)
 !--------------------------------------------------------------
-!     constant times a vector: x(1:N) <- Alpha*x(1:N) 
+!     constant times a vector: x(1:N) <- Alpha*x(1:N)
 !     only for incX=incY=1
 !     after BLAS
 !     replace this by the function from the optimized BLAS implementation:
@@ -163,7 +163,7 @@
       KPP_REAL, PARAMETER  ::  ONE=1.0_dp, HALF=0.5_dp
       LOGICAL, SAVE   ::  First=.TRUE.
 
-!$OMP THREADPRIVATE( Eps, First )      
+!$OMP THREADPRIVATE( Eps, First )
 
       IF (First) THEN
         First = .FALSE.
@@ -176,16 +176,16 @@
         PRINT*,'ERROR IN WLAMCH. EPS < ',Eps
         RETURN
 10      Eps = Eps*2
-        i = i-1      
+        i = i-1
       END IF
 
       WLAMCH = Eps
 
       END FUNCTION WLAMCH
-     
+
       SUBROUTINE WLAMCH_ADD( A, B, Suma )
 !      USE KPP_ROOT_Precision
-      
+
       KPP_REAL A, B, Suma
       Suma = A + B
 
@@ -199,7 +199,7 @@
 !     copies zeros into the vector y:  y <- 0
 !     after BLAS
 !--------------------------------------------------------------
-      
+
       INTEGER ::  i,M,MP1,N
       KPP_REAL ::  Y(N)
       KPP_REAL, PARAMETER :: ZERO = 0.0d0
@@ -212,7 +212,7 @@
           Y(i) = ZERO
         END DO
         IF( N .LT. 8 ) RETURN
-      END IF    
+      END IF
       MP1 = M+1
       DO i = MP1,N,8
         Y(i)     = ZERO
@@ -229,9 +229,9 @@
 
 
 !--------------------------------------------------------------
-      KPP_REAL FUNCTION WDOT (N, DX, incX, DY, incY) 
+      KPP_REAL FUNCTION WDOT (N, DX, incX, DY, incY)
 !--------------------------------------------------------------
-!     dot produce: wdot = x(1:N)*y(1:N) 
+!     dot produce: wdot = x(1:N)*y(1:N)
 !     only for incX=incY=1
 !     after BLAS
 !     replace this by the function from the optimized BLAS implementation:
@@ -241,52 +241,52 @@
 !--------------------------------------------------------------
       IMPLICIT NONE
       INTEGER :: N, incX, incY
-      KPP_REAL :: DX(N), DY(N) 
+      KPP_REAL :: DX(N), DY(N)
 
       INTEGER :: i, IX, IY, M, MP1, NS
-                                 
-      WDOT = 0.0D0 
-      IF (N .LE. 0) RETURN 
-      IF (incX .EQ. incY) IF (incX-1) 5,20,60 
-!                                                                       
-!     Code for unequal or nonpositive increments.                       
-!                                                                       
-    5 IX = 1 
-      IY = 1 
-      IF (incX .LT. 0) IX = (-N+1)*incX + 1 
-      IF (incY .LT. 0) IY = (-N+1)*incY + 1 
-      DO i = 1,N 
-        WDOT = WDOT + DX(IX)*DY(IY) 
-        IX = IX + incX 
-        IY = IY + incY 
-      END DO 
-      RETURN 
-!                                                                       
-!     Code for both increments equal to 1.                              
-!                                                                       
-!     Clean-up loop so remaining vector length is a multiple of 5.      
-!                                                                       
-   20 M = MOD(N,5) 
-      IF (M .EQ. 0) GO TO 40 
-      DO i = 1,M 
-         WDOT = WDOT + DX(i)*DY(i) 
-      END DO 
-      IF (N .LT. 5) RETURN 
-   40 MP1 = M + 1 
-      DO i = MP1,N,5 
-          WDOT = WDOT + DX(i)*DY(i) + DX(i+1)*DY(i+1) + DX(i+2)*DY(i+2) +  &
-                   DX(i+3)*DY(i+3) + DX(i+4)*DY(i+4)                   
-      END DO 
-      RETURN 
-!                                                                       
-!     Code for equal, positive, non-unit increments.                    
-!                                                                       
-   60 NS = N*incX 
-      DO i = 1,NS,incX 
-        WDOT = WDOT + DX(i)*DY(i) 
-      END DO 
 
-      END FUNCTION WDOT                                          
+      WDOT = 0.0D0
+      IF (N .LE. 0) RETURN
+      IF (incX .EQ. incY) IF (incX-1) 5,20,60
+!
+!     Code for unequal or nonpositive increments.
+!
+    5 IX = 1
+      IY = 1
+      IF (incX .LT. 0) IX = (-N+1)*incX + 1
+      IF (incY .LT. 0) IY = (-N+1)*incY + 1
+      DO i = 1,N
+        WDOT = WDOT + DX(IX)*DY(IY)
+        IX = IX + incX
+        IY = IY + incY
+      END DO
+      RETURN
+!
+!     Code for both increments equal to 1.
+!
+!     Clean-up loop so remaining vector length is a multiple of 5.
+!
+   20 M = MOD(N,5)
+      IF (M .EQ. 0) GO TO 40
+      DO i = 1,M
+         WDOT = WDOT + DX(i)*DY(i)
+      END DO
+      IF (N .LT. 5) RETURN
+   40 MP1 = M + 1
+      DO i = MP1,N,5
+          WDOT = WDOT + DX(i)*DY(i) + DX(i+1)*DY(i+1) + DX(i+2)*DY(i+2) +  &
+                   DX(i+3)*DY(i+3) + DX(i+4)*DY(i+4)
+      END DO
+      RETURN
+!
+!     Code for equal, positive, non-unit increments.
+!
+   60 NS = N*incX
+      DO i = 1,NS,incX
+        WDOT = WDOT + DX(i)*DY(i)
+      END DO
+
+      END FUNCTION WDOT
 
 
 !--------------------------------------------------------------
@@ -296,7 +296,7 @@
 !     BLAS - like
 !--------------------------------------------------------------
 !     USE KPP_ROOT_Precision
-      
+
       INTEGER :: i, M, MP1, N
       KPP_REAL :: X(N),Y(N),Z(N)
 
@@ -308,7 +308,7 @@
             Z(i) = X(i) + Y(i)
          END DO
          IF( N < 5 ) RETURN
-      END IF    
+      END IF
       MP1 = M+1
       DO i = MP1,N,5
          Z(i)     = X(i)     + Y(i)
@@ -319,15 +319,15 @@
       END DO
 
       END SUBROUTINE WADD
-      
-      
-      
+
+
+
 !--------------------------------------------------------------
       SUBROUTINE WGEFA(N,A,Ipvt,info)
 !--------------------------------------------------------------
 !     WGEFA FACTORS THE MATRIX A (N,N) BY
 !           GAUSS ELIMINATION WITH PARTIAL PIVOTING
-!     LINPACK - LIKE 
+!     LINPACK - LIKE
 !--------------------------------------------------------------
 !
       INTEGER       :: N,Ipvt(N),info
@@ -339,7 +339,7 @@
       info = 0
 
 size: IF (n > 1) THEN
-      
+
 col:  DO k = 1, n-1
 
 !        find l = pivot index
@@ -357,7 +357,7 @@ col:  DO k = 1, n-1
          IF (ABS(A(l,k)) < TINY(ZERO)) THEN
             info = k
             return
-         ELSE   
+         ELSE
             IF (l /= k) THEN
                t = A(l,k); A(l,k) = A(k,k); A(k,k) = t
             END IF
@@ -369,16 +369,16 @@ col:  DO k = 1, n-1
                   A(l,j) = A(k,j); A(k,j) = t
                END IF
                CALL WAXPY(n-k,t,A(k+1,k),1,A(k+1,j),1)
-            END DO         
+            END DO
          END IF
-         
+
        END DO col
-       
+
       END IF size
-      
+
       Ipvt(N) = N
       IF (ABS(A(N,N)) == ZERO) info = N
-      
+
       END SUBROUTINE WGEFA
 
 
@@ -391,7 +391,7 @@ col:  DO k = 1, n-1
 !
 !     Trans      = 'N'   to solve  A*x = b ,
 !                = 'T'   to solve  transpose(A)*x = b
-!     LINPACK - LIKE 
+!     LINPACK - LIKE
 !--------------------------------------------------------------
 
       INTEGER       :: N,Ipvt(N)
@@ -400,7 +400,7 @@ col:  DO k = 1, n-1
       KPP_REAL :: t
       INTEGER       :: k,kb,l
 
-      
+
       SELECT CASE (Trans)
 
       CASE ('n','N')  !  Solve  A * x = b
@@ -424,7 +424,7 @@ col:  DO k = 1, n-1
             t = -b(k)
             CALL WAXPY(k-1,t,a(1,k),1,b(1),1)
          END DO
-      
+
       CASE ('t','T')  !  Solve transpose(A) * x = b
 
 !        first solve  trans(U)*y = b
@@ -443,7 +443,7 @@ col:  DO k = 1, n-1
             END IF
          END DO
          END IF
-   
+
       END SELECT
 
       END SUBROUTINE WGESL
