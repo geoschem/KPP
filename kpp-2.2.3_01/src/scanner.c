@@ -106,7 +106,7 @@ int useEqntags     = 0;
 int useLang        = F77_LANG;
 int useStochastic  = 0;
 int doFlux         = 0;
-/* if useValues=1 KPP replaces parameters like NVAR etc.
+/* if useDeclareValues=1 KPP replaces parameters like NVAR etc.
        by their values in vector/matrix declarations */
 int useDeclareValues = 0;
 

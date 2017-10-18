@@ -1864,7 +1864,7 @@ int dim;
 
   useLangOld = useLang;
   useLang = C_LANG;
-  nElm = NonZero( LU, 0, VarNr, irow, icol, crow, diag );*/ /*jjb 01102017 nElm is not used but */
+  nElm = NonZero( LU, 0, VarNr, irow, icol, crow, diag ); /*jjb 01102017 nElm is not used but */
                                     /*   icol, crow and diag are defined when calling NonZero */ 
 
   useLang = useLangOld;
@@ -2353,10 +2353,10 @@ void GenerateGlobalHeader()
    Declare( VAR );
    Declare( FIX );
    WriteComment("VAR, FIX are chunks of array C");
-   F77_Inline("!      EQUIVALENCE( %s(%d),%s(1) )",
+   F77_Inline("      EQUIVALENCE( %s(%d),%s(1) )",
             varTable[C]->name, 1, varTable[VAR]->name );
    if ( FixNr > 0 ) { /*  mz_rs_20050121 */
-     F77_Inline("!      EQUIVALENCE( %s(%d),%s(1) )",
+     F77_Inline("      EQUIVALENCE( %s(%d),%s(1) )",
        varTable[C]->name, VarNr+1, varTable[FIX]->name );
    }
   }

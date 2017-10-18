@@ -150,7 +150,7 @@ extern int useLang;
 extern int useStochastic;
 extern int doFlux;
 
-/* if useValues=1 KPP replaces parameters like NVAR etc. 
+/* if useDeclareValues=1 KPP replaces parameters like NVAR etc. 
        by their values in vector/matrix declarations */
 extern int useDeclareValues; 
 
