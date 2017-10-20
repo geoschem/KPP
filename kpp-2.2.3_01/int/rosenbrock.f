@@ -1,6 +1,6 @@
       SUBROUTINE INTEGRATE( TIN, TOUT )
 
-      IMPLICIT NONE	 
+      IMPLICIT NONE
       INCLUDE 'KPP_ROOT_Parameters.h'
       INCLUDE 'KPP_ROOT_Global.h'
       INTEGER Nstp, Nacc, Nrej, Nsng, IERR
@@ -55,7 +55,7 @@ c <rvg
      &            FunTemplate,JacTemplate,
      &            RPAR,IPAR,IERR)
 
-	        
+
       Nstp = Nstp + IPAR(13)
       Nacc = Nacc + IPAR(14)
       Nrej = Nrej + IPAR(15)
@@ -242,10 +242,10 @@ c <rvg
 !      For Vector tolerances (IPAR(2).EQ.0) the code uses AbsTol(1:NVAR) and RelTol(1:NVAR)
       IF (IPAR(2).EQ.0) THEN
          VectorTol = .TRUE.
-	 UplimTol  = KPP_NVAR
+         UplimTol  = KPP_NVAR
       ELSE 
          VectorTol = .FALSE.
-	 UplimTol  = 1
+         UplimTol  = 1
       END IF
       
 !~~~>   The maximum number of steps admitted
@@ -256,7 +256,7 @@ c <rvg
       ELSE 
          WRITE(6,*)'User-selected max no. of steps: IPAR(3)=',IPAR(3)
          CALL ros_ErrorMsg(-1,Tstart,ZERO,IERR)
-	 RETURN         
+         RETURN         
       END IF
 
 !~~~>  The particular Rosenbrock method chosen
@@ -267,7 +267,7 @@ c <rvg
       ELSE  
          WRITE (6,*) 'User-selected Rosenbrock method: IPAR(4)=',IPAR(4)
          CALL ros_ErrorMsg(-2,Tstart,ZERO,IERR)
-	 RETURN         
+         RETURN         
       END IF
       
 !~~~>  Unit roundoff (1+Roundoff>1)  
@@ -279,69 +279,69 @@ c <rvg
          Hmin = ZERO
       ELSEIF (RPAR(1).GT.ZERO) THEN 
          Hmin = RPAR(1)
-      ELSE	 
+      ELSE
          WRITE (6,*) 'User-selected Hmin: RPAR(1)=', RPAR(1)
          CALL ros_ErrorMsg(-3,Tstart,ZERO,IERR)
-	 RETURN         
+         RETURN         
       END IF
 !~~~>  Upper bound on the step size: (positive value)
       IF (RPAR(2).EQ.ZERO) THEN
          Hmax = ABS(Tend-Tstart)
       ELSEIF (RPAR(2).GT.ZERO) THEN
          Hmax = MIN(ABS(RPAR(2)),ABS(Tend-Tstart))
-      ELSE	 
+      ELSE
          WRITE (6,*) 'User-selected Hmax: RPAR(2)=', RPAR(2)
          CALL ros_ErrorMsg(-3,Tstart,ZERO,IERR)
-	 RETURN         
+         RETURN         
       END IF
 !~~~>  Starting step size: (positive value)
       IF (RPAR(3).EQ.ZERO) THEN
          Hstart = MAX(Hmin,DeltaMin)
       ELSEIF (RPAR(3).GT.ZERO) THEN
          Hstart = MIN(ABS(RPAR(3)),ABS(Tend-Tstart))
-      ELSE	 
+      ELSE
          WRITE (6,*) 'User-selected Hstart: RPAR(3)=', RPAR(3)
          CALL ros_ErrorMsg(-3,Tstart,ZERO,IERR)
-	 RETURN         
+         RETURN         
       END IF
 !~~~>  Step size can be changed s.t.  FacMin < Hnew/Hexit < FacMax 
       IF (RPAR(4).EQ.ZERO) THEN
          FacMin = 0.2d0
       ELSEIF (RPAR(4).GT.ZERO) THEN
          FacMin = RPAR(4)
-      ELSE	 
+      ELSE
          WRITE (6,*) 'User-selected FacMin: RPAR(4)=', RPAR(4)
          CALL ros_ErrorMsg(-4,Tstart,ZERO,IERR)
-	 RETURN         
+         RETURN         
       END IF
       IF (RPAR(5).EQ.ZERO) THEN
          FacMax = 6.0d0
       ELSEIF (RPAR(5).GT.ZERO) THEN
          FacMax = RPAR(5)
-      ELSE	 
+      ELSE
          WRITE (6,*) 'User-selected FacMax: RPAR(5)=', RPAR(5)
          CALL ros_ErrorMsg(-4,Tstart,ZERO,IERR)
-	 RETURN         
+         RETURN         
       END IF
 !~~~>   FacRej: Factor to decrease step after 2 succesive rejections
       IF (RPAR(6).EQ.ZERO) THEN
          FacRej = 0.1d0
       ELSEIF (RPAR(6).GT.ZERO) THEN
          FacRej = RPAR(6)
-      ELSE	 
+      ELSE
          WRITE (6,*) 'User-selected FacRej: RPAR(6)=', RPAR(6)
          CALL ros_ErrorMsg(-4,Tstart,ZERO,IERR)
-	 RETURN         
+         RETURN         
       END IF
 !~~~>   FacSafe: Safety Factor in the computation of new step size
       IF (RPAR(7).EQ.ZERO) THEN
          FacSafe = 0.9d0
       ELSEIF (RPAR(7).GT.ZERO) THEN
          FacSafe = RPAR(7)
-      ELSE	 
+      ELSE
          WRITE (6,*) 'User-selected FacSafe: RPAR(7)=', RPAR(7)
          CALL ros_ErrorMsg(-4,Tstart,ZERO,IERR)
-	 RETURN         
+         RETURN         
       END IF
 !~~~>  Check if tolerances are reasonable
        DO i=1,UplimTol
@@ -350,7 +350,7 @@ c <rvg
             WRITE (6,*) ' AbsTol(',i,') = ',AbsTol(i)
             WRITE (6,*) ' RelTol(',i,') = ',RelTol(i)
             CALL ros_ErrorMsg(-5,Tstart,ZERO,IERR)
-	    RETURN
+            RETURN
          END IF
        END DO
      
@@ -375,7 +375,7 @@ c <rvg
       ELSE
          WRITE (6,*) 'Unknown Rosenbrock method: IPAR(4)=', Method
          CALL ros_ErrorMsg(-2,Tstart,ZERO,IERR) 
-	 RETURN        
+         RETURN        
       END IF
 
 !~~~>  CALL Rosenbrock method   
@@ -503,18 +503,19 @@ c <rvg
 !     &     .OR. (Direction.LT.0).AND.((Tend-T)+Roundoff.LE.ZERO) )
       DO WHILE (ABS(Tend-T).GE.Roundoff)
 
-      IF ( Nstp.GT.Max_no_steps ) THEN  ! Too many steps
-	CALL ros_ErrorMsg(-6,T,H,IERR)
-	RETURN
+      IF ( Nstp.GT.Max_no_steps ) THEN ! Too many steps
+        CALL ros_ErrorMsg(-6,T,H,IERR)
+        RETURN
       END IF
-
+      IF ( ((T+0.1d0*H).EQ.T).OR.(H.LE.Roundoff) ) THEN  ! Step size too small
 ! jjb: use intrinsic Fortran function "spacing",
 !      which should result in a more accurate test (differences will occur if
 !      0.1*H < spacing(T) <= H
-!      IF ( ((T+0.1d0*H).EQ.T).OR.(H.LE.Roundoff) ) THEN  ! Step size too small
-      IF ( (H.LT.SPACING(T)).OR.(H.LE.Roundoff) ) THEN  ! Step size too small
-	CALL ros_ErrorMsg(-7,T,H,IERR)
-	RETURN
+! jjb despite more accurate, this second version is probably slower
+!      (computing cost of spacing function)
+!      IF ( (H.LT.SPACING(T)).OR.(H.LE.Roundoff) ) THEN  ! Step size too small
+        CALL ros_ErrorMsg(-7,T,H,IERR)
+        RETURN
       END IF
 
 !~~~>  Limit H if necessary to avoid going beyond Tend
@@ -540,32 +541,32 @@ c <rvg
       CALL ros_PrepareMatrix(H,Direction,ros_Gamma(1),
      &              Jac0,Ghimj,Pivot,Singular)
       IF (Singular) THEN ! More than 5 consecutive failed decompositions
-	 CALL ros_ErrorMsg(-8,T,H,IERR)
-	 RETURN
+         CALL ros_ErrorMsg(-8,T,H,IERR)
+         RETURN
       END IF
 
 !~~~>   Compute the stages
       DO istage = 1, ros_S
 
-	 ! Current istage offset. Current istage vector is K(ioffset+1:ioffset+KPP_NVAR)
-	 ioffset = KPP_NVAR*(istage-1)
+         ! Current istage offset. Current istage vector is K(ioffset+1:ioffset+KPP_NVAR)
+         ioffset = KPP_NVAR*(istage-1)
 
-	 ! For the 1st istage the function has been computed previously
-	 IF ( istage.EQ.1 ) THEN
-	   !slim: CALL WCOPY(KPP_NVAR,Fcn0,1,Fcn,1)
+         ! For the 1st istage the function has been computed previously
+         IF ( istage.EQ.1 ) THEN
+           ! slim: CALL WCOPY(KPP_NVAR,Fcn0,1,Fcn,1)
            Fcn = Fcn0
-	 ! istage>1 and a new function evaluation is needed at the current istage
-	 ELSEIF ( ros_NewF(istage) ) THEN
-	   !slim: CALL WCOPY(KPP_NVAR,Y,1,Ynew,1)
-	   Ynew = Y
-	   DO j = 1, istage-1
-	     CALL WAXPY(KPP_NVAR,ros_A((istage-1)*(istage-2)/2+j),
+         ! istage>1 and a new function evaluation is needed at the current istage
+         ELSEIF ( ros_NewF(istage) ) THEN
+           !slim: CALL WCOPY(KPP_NVAR,Y,1,Ynew,1)
+           Ynew = Y
+           DO j = 1, istage-1
+              CALL WAXPY(KPP_NVAR,ros_A((istage-1)*(istage-2)/2+j),
      &                  K(KPP_NVAR*(j-1)+1:KPP_NVAR*j),1,Ynew,1)
-	   END DO
-	   Tau = T + ros_Alpha(istage)*Direction*H
+           END DO
+           Tau = T + ros_Alpha(istage)*Direction*H
            CALL FunTemplate(Tau,Ynew,Fcn)
-	 END IF ! if istage.EQ.1 elseif ros_NewF(istage)
-	 !slim: CALL WCOPY(KPP_NVAR,Fcn,1,K(ioffset+1),1)
+         END IF  ! if istage.EQ.1 elseif ros_NewF(istage)
+         ! slim: CALL WCOPY(KPP_NVAR,Fcn,1,K(ioffset+1),1)
          K(ioffset+1:ioffset+KPP_NVAR) = Fcn
          DO j = 1, istage-1
            HC = ros_C((istage-1)*(istage-2)/2+j)/(Direction*H)
@@ -574,7 +575,7 @@ c <rvg
          END DO
          IF ((.NOT. Autonomous).AND.(ros_Gamma(istage).NE.ZERO)) THEN
            HG = Direction*H*ros_Gamma(istage)
-!	   CALL WAXPY(KPP_NVAR,HG,dFdT,1,K(ioffset+1),1)
+!          CALL WAXPY(KPP_NVAR,HG,dFdT,1,K(ioffset+1),1)
            CALL WAXPY(KPP_NVAR,HG,dFdT,1,
      &                K(ioffset+1:ioffset+KPP_NVAR),1)
          END IF
@@ -587,7 +588,7 @@ c <rvg
       !slim: CALL WCOPY(KPP_NVAR,Y,1,Ynew,1)
       Ynew = Y
       DO j=1,ros_S
-	 CALL WAXPY(KPP_NVAR,ros_M(j),
+         CALL WAXPY(KPP_NVAR,ros_M(j),
      &              K(KPP_NVAR*(j-1)+1:KPP_NVAR*j),1,Ynew,1)
       END DO
 
@@ -595,7 +596,7 @@ c <rvg
       !slim: CALL WSCAL(KPP_NVAR,ZERO,Yerr,1)
       Yerr(1:KPP_NVAR) = ZERO
       DO j=1,ros_S
-	 CALL WAXPY(KPP_NVAR,ros_E(j),
+         CALL WAXPY(KPP_NVAR,ros_E(j),
      &              K(KPP_NVAR*(j-1)+1:KPP_NVAR*j),1,Yerr,1)
       END DO
       Err = ros_ErrorNorm ( Y, Ynew, Yerr, AbsTol, RelTol, VectorTol )
@@ -608,28 +609,31 @@ c <rvg
       Nstp = Nstp+1
       IF ( (Err.LE.ONE).OR.(H.LE.Hmin) ) THEN  !~~~> Accept step
          Nacc = Nacc+1
-	 !slim: CALL WCOPY(KPP_NVAR,Ynew,1,Y,1)
+         !slim: CALL WCOPY(KPP_NVAR,Ynew,1,Y,1)
          Y = Ynew
          T = T + Direction*H
-	 Hnew = MAX(Hmin,MIN(Hnew,Hmax))
+         Hnew = MAX(Hmin,MIN(Hnew,Hmax))
          IF (RejectLastH) THEN  ! No step size increase after a rejected step
-	    Hnew = MIN(Hnew,H)
-	 END IF
+            Hnew = MIN(Hnew,H)
+         END IF
          RejectLastH = .FALSE.
          RejectMoreH = .FALSE.
          H = Hnew
-	 GOTO 101  ! EXIT THE LOOP: WHILE STEP NOT ACCEPTED
+         GOTO 101               ! EXIT THE LOOP: WHILE STEP NOT ACCEPTED
       ELSE                 !~~~> Reject step
          IF (RejectMoreH) THEN
-!	    Hnew=H*FacRej
-            Hnew=MAX(Hmin,H*FacRej) ! FacRej is small (~0.1) so need to check that Hnew is not too small
-	 END IF
+            Hnew=H*FacRej
+!           Hnew=MAX(Hmin,H*FacRej) ! FacRej is small (0.1) so need to check that Hnew is not too small
+!                                      jjb: this is probably not good. Let Hnew become too small is good,
+!                                           it will be diagnosed at the beginning of the loop as a "step
+!                                           size too small" case
+         END IF
          RejectMoreH = RejectLastH
          RejectLastH = .TRUE.
          H = Hnew
          IF (Nacc.GE.1) THEN
-	    Nrej = Nrej+1
-	 END IF
+            Nrej = Nrej+1
+         END IF
       END IF ! Err <= 1
 
       END DO ! LOOP: WHILE STEP NOT ACCEPTED
@@ -651,7 +655,7 @@ c <rvg
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 !~~~> Computes the "scaled norm" of the error vector Yerr
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      IMPLICIT NONE	 
+      IMPLICIT NONE
 
 ! Input arguments   
       KPP_REAL Y(KPP_NVAR), Ynew(KPP_NVAR), Yerr(KPP_NVAR)
@@ -664,7 +668,7 @@ c <rvg
       
       Err = ZERO
       DO i=1,KPP_NVAR
-	Ymax = MAX(ABS(Y(i)),ABS(Ynew(i)))
+        Ymax = MAX(ABS(Y(i)),ABS(Ynew(i)))
         IF (VectorTol) THEN
           Scale = AbsTol(i)+RelTol(i)*Ymax
         ELSE
@@ -685,7 +689,8 @@ c <rvg
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 !~~~> The time partial derivative of the function by finite differences
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      IMPLICIT NONE	 
+      IMPLICIT NONE
+!      INCLUDE 'KPP_ROOT_Parameters.h' ! jjb Forcheck
 
 !~~~> Input arguments   
       KPP_REAL T, Roundoff, Y(KPP_NVAR), Fcn0(KPP_NVAR) 
@@ -719,7 +724,8 @@ c <rvg
 !          -half the step size if LU decomposition fails and retry
 !          -exit after 5 consecutive fails
 ! --- --- --- --- --- --- --- --- --- --- --- --- ---
-      IMPLICIT NONE	 
+      IMPLICIT NONE
+!      INCLUDE 'KPP_ROOT_Parameters.h' ! jjb Forcheck
       INCLUDE 'KPP_ROOT_Sparse.h'
       
 !~~~> Input arguments      
@@ -758,20 +764,20 @@ c <rvg
         CALL DecompTemplate( Ghimj, Pivot, ising )
         IF (ising .EQ. 0) THEN
 !~~~>    If successful done 
-	  Singular = .FALSE. 
-	ELSE ! ising .ne. 0
+          Singular = .FALSE. 
+       ELSE ! ising .ne. 0
 !~~~>    If unsuccessful half the step size; if 5 consecutive fails then return
           Nsng = Nsng+1
           Nconsecutive = Nconsecutive+1
-	  Singular = .TRUE. 
-	  PRINT*,'Warning: LU Decomposition returned ising = ',ising
+          Singular = .TRUE. 
+          PRINT*,'Warning: LU Decomposition returned ising = ',ising
           IF (Nconsecutive.LE.5) THEN ! Less than 5 consecutive failed decompositions
             H = H*HALF
-	  ELSE  ! More than 5 consecutive failed decompositions
- 	    RETURN
+         ELSE ! More than 5 consecutive failed decompositions
+            RETURN
           END IF  ! Nconsecutive
-        END IF	! ising 
-	 
+        END IF  ! ising 
+
       END DO ! WHILE Singular
 
       RETURN
@@ -1123,7 +1129,7 @@ c <rvg
        ros_Alpha(4) = 0.630d0
        ros_Alpha(5) = 1.000d0
        ros_Alpha(6) = 1.000d0
-	
+
 !~~~> Gamma_i = \sum_j  gamma_{i,j}       
        ros_Gamma(1) = 0.2500000000000000d+00
        ros_Gamma(2) =-0.1043000000000000d+00
