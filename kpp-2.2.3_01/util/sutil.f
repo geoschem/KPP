@@ -33,7 +33,7 @@ C ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             IF ( ABS(JVS( LU_DIAG(J) )) .GT. 0. ) THEN
                a = -W(j) / JVS( LU_DIAG(j) )
             ELSE
-               IER = LU_DIAG(j)
+               IER = k
                RETURN
             END IF
             ! jjb_20170301 >
