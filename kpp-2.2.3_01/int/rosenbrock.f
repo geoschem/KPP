@@ -30,7 +30,7 @@ c      STEPSTART=STEPMIN
 !      STEPSTART=1.d-3
       do i=1,NVAR
          RTOL(i) = 1.d-3
-         ATOL(i) = 1.d-25
+         ATOL(i) = 1.d-14
       enddo
 c <rvg
 ! <jjb
@@ -60,8 +60,8 @@ c <rvg
       Nacc = Nacc + IPAR(14)
       Nrej = Nrej + IPAR(15)
       Nsng = Nsng + IPAR(18)
-      PRINT*,'Step=',Nstp,' Acc=',Nacc,' Rej=',Nrej,
-     &      ' Singular=',Nsng
+!      PRINT*,'Step=',Nstp,' Acc=',Nacc,' Rej=',Nrej,
+!     &      ' Singular=',Nsng
 
 
       IF (IERR.LT.0) THEN
