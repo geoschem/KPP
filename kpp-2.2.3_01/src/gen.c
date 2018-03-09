@@ -3330,7 +3330,7 @@ int n;
   GenerateUpdatePhoto();
   GenerateGetMass(); 
 
-  GenerateComputeFamilies();
+  /*  GenerateComputeFamilies(); Removed. MSL Oct. 30, 2017*/
 
   printf("\nKPP is generating the parameters:");
   printf("\n    - %s_Parameters",rootFileName);  
