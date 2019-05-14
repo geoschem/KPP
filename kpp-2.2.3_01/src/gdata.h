@@ -49,7 +49,7 @@
 #define MAX_ATNR	250 
 #define MAX_PATH        120
 #define MAX_FILES	 20
-#define MAX_FAMILIES	 50
+#define MAX_FAMILIES	300
 #define MAX_MEMBERS 	150
 #define MAX_EQNLEN      200
 
