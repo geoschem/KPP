@@ -36,7 +36,7 @@
 
 #include <stdio.h>
 
-#define MAX_EQN         800
+#define MAX_EQN         1000
 #define MAX_SPECIES     800
 #define MAX_SPNAME       30
 #define MAX_IVAL         40
