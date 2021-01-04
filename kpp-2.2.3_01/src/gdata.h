@@ -29,7 +29,7 @@
 
 ******************************************************************************/
 
-#define KPP_VERSION "2.2.4_gc"
+#define KPP_VERSION "2.2.5_gc"  /* bmy, 04 Jan 2021 */
 
 #ifndef _GDATA_H_
 #define _GDATA_H_

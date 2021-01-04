@@ -37,10 +37,7 @@
 #include <stdio.h>
 #include "gdef.h"
 
-/*  mz_rs_20050518+ value increased */
-#define MAX_INLINE 20000
-/* #define MAX_INLINE 4000 */
-/*  mz_rs_20050518- */
+#define MAX_INLINE 50000  /* bmy, 04 Jan 2021 */
           
 enum eq_state { LHS, RHS, RAT };
 enum sptypes { DUMMY_SPC, VAR_SPC, RAD_SPC, FIX_SPC, PL_SPC };
