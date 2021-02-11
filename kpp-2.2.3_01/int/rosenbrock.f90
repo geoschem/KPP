@@ -11,7 +11,8 @@
 !    (C)  Adrian Sandu, August 2004                                       !
 !    Virginia Polytechnic Institute and State University                  !
 !    Contact: sandu@cs.vt.edu                                             !
-!    Revised by Philipp Miehe and Adrian Sandu, May 2006                  !                               !
+!    Revised by Philipp Miehe and Adrian Sandu, May 2006                  !
+!                                                                         !
 !    This implementation is part of KPP - the Kinetic PreProcessor        !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 
@@ -1258,7 +1259,6 @@ SUBROUTINE FunTemplate( T, Y, Ydot )
  USE KPP_ROOT_Parameters, ONLY: NVAR, LU_NONZERO
  USE KPP_ROOT_Global, ONLY: FIX, RCONST, TIME
  USE KPP_ROOT_Function, ONLY: Fun
- USE KPP_ROOT_Rates, ONLY: Update_SUN, Update_RCONST
 !~~~> Input variables
    KPP_REAL :: T, Y(NVAR)
 !~~~> Output variables
@@ -1268,8 +1268,6 @@ SUBROUTINE FunTemplate( T, Y, Ydot )
 
    Told = TIME
    TIME = T
-   CALL Update_SUN()
-   CALL Update_RCONST()
    CALL Fun( Y, FIX, RCONST, Ydot )
    TIME = Told
 
@@ -1286,7 +1284,6 @@ SUBROUTINE JacTemplate( T, Y, Jcb )
  USE KPP_ROOT_Global, ONLY: FIX, RCONST, TIME
  USE KPP_ROOT_Jacobian, ONLY: Jac_SP, LU_IROW, LU_ICOL
  USE KPP_ROOT_LinearAlgebra
- USE KPP_ROOT_Rates, ONLY: Update_SUN, Update_RCONST
 !~~~> Input variables
     KPP_REAL :: T, Y(NVAR)
 !~~~> Output variables
@@ -1303,8 +1300,6 @@ SUBROUTINE JacTemplate( T, Y, Jcb )
 
     Told = TIME
     TIME = T
-    CALL Update_SUN()
-    CALL Update_RCONST()
 #ifdef FULL_ALGEBRA    
     CALL Jac_SP(Y, FIX, RCONST, JV)
     DO j=1,NVAR
