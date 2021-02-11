@@ -1259,7 +1259,6 @@ SUBROUTINE FunSplitTemplate( T, Y, Ydot, P_VAR, D_VAR )
  USE KPP_ROOT_Parameters, ONLY: NVAR, LU_NONZERO
  USE KPP_ROOT_Global, ONLY: FIX, RCONST, TIME
  USE KPP_ROOT_Function, ONLY: Fun_SPLIT
- USE KPP_ROOT_Rates, ONLY: Update_SUN, Update_RCONST
 !~~~> Input variables
    KPP_REAL :: T, Y(NVAR)
 !~~~> Output variables
@@ -1270,8 +1269,6 @@ SUBROUTINE FunSplitTemplate( T, Y, Ydot, P_VAR, D_VAR )
 
    Told = TIME
    TIME = T
-   CALL Update_SUN()
-   CALL Update_RCONST()
    CALL Fun_SPLIT( Y, FIX, RCONST, P, D )
    Ydot = P - D*y
    TIME = Told
@@ -1292,7 +1289,6 @@ SUBROUTINE JacTemplate( T, Y, Jcb )
  USE KPP_ROOT_Global, ONLY: FIX, RCONST, TIME
  USE KPP_ROOT_Jacobian, ONLY: Jac_SP, LU_IROW, LU_ICOL
  USE KPP_ROOT_LinearAlgebra
- USE KPP_ROOT_Rates, ONLY: Update_SUN, Update_RCONST
 !~~~> Input variables
     KPP_REAL :: T, Y(NVAR)
 !~~~> Output variables
@@ -1309,8 +1305,6 @@ SUBROUTINE JacTemplate( T, Y, Jcb )
 
     Told = TIME
     TIME = T
-    CALL Update_SUN()
-    CALL Update_RCONST()
 #ifdef FULL_ALGEBRA    
     CALL Jac_SP(Y, FIX, RCONST, JV)
     DO j=1,NVAR
