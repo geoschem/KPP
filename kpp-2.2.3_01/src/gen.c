@@ -2959,6 +2959,15 @@ char buf[200], suffix[5];
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 void GenerateF90Modules(char where)
 {
+
+/* ########################################################################
+   ###  NOTE: Use the .F90 suffix instead of .f90, because .F90 denotes ###
+   ###  non-preprocessed source code, whereas .f90 denotes source code  ###
+   ###  with header files inlined.  This update was added into the      ###
+   ###  GC_updates branch for KPP version 2.3.0_gc.                     ###
+   ###     -- Bob Yantosca, 11 Feb 2020                                 ###
+   ######################################################################## */
+
 char buf[200];
 
 if (useLang != F90_LANG) return;
@@ -2966,7 +2975,7 @@ if (useLang != F90_LANG) return;
 switch (where) {
 case 'h':
 
-  sprintf( buf, "%s_Precision.f90", rootFileName );  
+  sprintf( buf, "%s_Precision.F90", rootFileName );  
   sparse_dataFile = fopen(buf, "w");
   if( sparse_dataFile == 0 ) {
     FatalError(3,"%s: Can't create file", buf );
@@ -3113,7 +3122,9 @@ case 'h':
     /* Here we define the model module which aggregates everything */ 
     /* put module rootFileName_Model into separate file */
     /* (reusing "sparse_dataFile" as done above for _Precision file) */
-    sprintf( buf, "%s_Model.f90", rootFileName );  
+
+
+    sprintf( buf, "%s_Model.F90", rootFileName );  
     sparse_dataFile = fopen(buf, "w");
     if( sparse_dataFile == 0 ) {
       FatalError(3,"%s: Can't create file", buf );
