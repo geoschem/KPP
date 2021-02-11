@@ -76,13 +76,6 @@ int V_USER, CL;
 int NMLCV, NMLCF, SCT, PROPENSITY, VOLUME, IRCT;
 int FLUX_MAP;
 int FAM,NFAM;
-
-/* ################################################
-   ### Add Aout variable                        ###
-   ### KPP 2.3.0_gc, Bob Yantosca (11 Feb 2020) ###
-   ################################################ */
-int Aout;
-
 int Jac_NZ, LU_Jac_NZ, nzr;
 
 NODE *sum, *prod;
@@ -168,11 +161,6 @@ int i,j;
   RCT    = DefvElm( "RCT",    real, -NREACT, "Rate constants (local)" );
 
   Vdot = DefvElm( "Vdot", real, -NVAR, "Time derivative of variable species concentrations" );
-/* ################################################
-   ### Add Aout variable                        ###
-   ### KPP 2.3.0_gc, Bob Yantosca (11 Feb 2020) ###
-   ################################################ */
-  Aout = DefvElm( "Aout", real, -NREACT, "Array for returning reaction rates");
 
   P_VAR = DefvElm( "P_VAR", real, -NVAR, "Production term" );
   D_VAR = DefvElm( "D_VAR", real, -NVAR, "Destruction term" );
@@ -647,21 +635,46 @@ int F_VAR, FSPLIT_VAR;
   if (useLang != MATLAB_LANG)  /* Matlab generates an additional file per function */
        UseFile( functionFile );
 
-  F_VAR      = DefFnc( "Fun",      5, "time derivatives of variables - Aggregate form");
-  FSPLIT_VAR = DefFnc( "Fun_SPLIT", 6, "time derivatives of variables - Split form");
+  F_VAR      = DefFnc( "Fun",      4, "time derivatives of variables - Aggregate form");
+  FSPLIT_VAR = DefFnc( "Fun_SPLIT", 5, "time derivatives of variables - Split form");
 
-  if( useAggregate )
-  /*########################################################
-    ###  Add Aout argument for returning reaction rates  ###
-    ###  KPP 2.3.0_gc, Bob Yantosca (11 Feb 2020)        ###
-    ###                                                  ###
-    ###  Original function call:                         ###
-    ###   FunctionBegin( F_VAR, V, F, RCT, Vdot );       ###
-    ########################################################*/
-    FunctionBegin( F_VAR, V, F, RCT, Vdot, Aout );
-  else
-    FunctionBegin( FSPLIT_VAR, V, F, RCT, P_VAR, D_VAR, Aout );
-
+  if( useAggregate ) {
+  /*########################################################################
+    ###  KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)                        ###
+    ###  Manually declare Aout as an optional variable.  We cannot use   ###
+    ###  routine FunctionBegin, because this has no way of defining      ###
+    ###  optional Fortran90 arguments.  Therefore we will just           ###
+    ###  write this using C-language fprintf statements.                 ###
+    ########################################################################*/
+    /*---begin---*/
+    fprintf(functionFile, "! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+    fprintf(functionFile, "!\n");
+    fprintf(functionFile, "! Fun - time derivatives of variables - Aggregate form\n");
+    fprintf(functionFile, "!   Arguments :\n");
+    fprintf(functionFile, "!      V         - Concentrations of variable species (local)\n");
+    fprintf(functionFile, "!      F         - Concentrations of fixed species (local)\n");
+    fprintf(functionFile, "!      RCT       - Rate constants (local)\n");
+    fprintf(functionFile, "!      Vdot      - Time derivative of variable species concentrations\n");
+    fprintf(functionFile, "!      Aout      - Array to return rxn rates for diagnostics (OPTIONAL)\n");
+    fprintf(functionFile, "!\n");
+    fprintf(functionFile, "! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+    fprintf(functionFile, "SUBROUTINE Fun ( V, F, RCT, Vdot, Aout )\n\n");
+    fprintf(functionFile, "! V - Concentrations of variable species (local)\n");
+    fprintf(functionFile, "  REAL(kind=dp) :: V(NVAR)\n");
+    fprintf(functionFile, "! F - Concentrations of fixed species (local)\n");
+    fprintf(functionFile, "  REAL(kind=dp) :: F(NFIX)\n");
+    fprintf(functionFile, "! RCT - Rate constants (local)\n");
+    fprintf(functionFile, "  REAL(kind=dp) :: RCT(NREACT)\n");
+    fprintf(functionFile, "! Vdot - Time derivative of variable species concentrations\n");
+    fprintf(functionFile, "  REAL(kind=dp) :: Vdot(NVAR)\n");
+    fprintf(functionFile, "!### KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)\n");
+    fprintf(functionFile, "!### Aout - Array for returning KPP reaction rates for diagnostics\n");
+    fprintf(functionFile, "  REAL(kind=dp), OPTIONAL :: Aout(NREACT)\n");
+    /*---end---*/
+  } else {
+    FunctionBegin( FSPLIT_VAR, V, F, RCT, P_VAR, D_VAR );
+  }
+ 
   if ( (useLang==MATLAB_LANG)&&(!useAggregate) )
      printf("\nWarning: in the function definition move P_VAR to output vars\n");
 
@@ -703,16 +716,16 @@ int F_VAR, FSPLIT_VAR;
     }
   }
 
-
-/*################################################################
-  ###  Copy A to Aout to return reaction rates outside of KPP  ###
-  ###  KPP 2.3.0_gc, Bob Yantosca (11 Feb 2020)                ###
-  ################################################################*/
-  fprintf(functionFile, "\n\n  ! Use Aout to return reaction rates\n");
-  fprintf(functionFile, "  ! KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)\n");
-  fprintf(functionFile, "  Aout = A\n\n");
-
   if( useAggregate ) {
+  /*########################################################################
+    ###  KPP 2.3.0_gc, Bob Yantosca (11 Feb 2020)                        ###
+    ###  Copy A to Aout to return reaction rates outside of KPP          ###
+    ########################################################################*/
+    /*---begin---*/
+    fprintf(functionFile, "\n\n!### KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)\n");
+    fprintf(functionFile, "\!### Use Aout to return reaction rates\n");
+    fprintf(functionFile, "  IF ( PRESENT( Aout ) ) Aout = A\n\n");
+    /*---end---*/
 
     NewLines(1);
     WriteComment("Aggregate function");
@@ -2988,13 +3001,13 @@ char buf[200], suffix[5];
 void GenerateF90Modules(char where)
 {
 
-/* ########################################################################
-   ###  NOTE: Use the .F90 suffix instead of .f90, because .F90 denotes ###
-   ###  non-preprocessed source code, whereas .f90 denotes source code  ###
-   ###  with header files inlined.  This update was added into the      ###
-   ###  GC_updates branch for KPP version 2.3.0_gc.                     ###
-   ###     -- Bob Yantosca, 11 Feb 2020                                 ###
-   ######################################################################## */
+/*#########################################################################
+  ###  KPP 2.3.0_gc, Bob Yantosca (11 Feb 2020)                         ###
+  ###  NOTE: Use the .F90 suffix instead of .f90, because .F90 denotes  ###
+  ###  non-preprocessed source code, whereas .f90 denotes source code   ###
+  ###  with header files inlined.  This update was added into the       ###
+  ###  GC_updates branch for KPP version 2.3.0_gc.                      ###
+  #########################################################################*/
 
 char buf[200];
 

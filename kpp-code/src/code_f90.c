@@ -742,13 +742,13 @@ void Use_F90()
   FunctionBegin     = F90_FunctionBegin;
   FunctionEnd       = F90_FunctionEnd;
 
-/* ########################################################################
-   ###  NOTE: Use the .F90 suffix instead of .f90, because .F90 denotes ###
-   ###  non-preprocessed source code, whereas .f90 denotes source code  ###
-   ###  with header files inlined.  This update was added into the      ###
-   ###  GC_updates branch for KPP version 2.3.0_gc.                     ###
-   ###     -- Bob Yantosca, 11 Feb 2020                                 ###
-   ######################################################################## */
+/*#########################################################################
+  ###  KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)                         ###
+  ###  NOTE: Use the .F90 suffix instead of .f90, because .F90 denotes  ###
+  ###  non-preprocessed source code, whereas .f90 denotes source code   ###
+  ###  with header files inlined.  This update was added into the       ###
+  ###  GC_updates branch for KPP version 2.3.0_gc.                      ###
+  #########################################################################*/
 
   OpenFile( &param_headerFile,   rootFileName, "_Parameters.F90", "Parameter Module File" );
   /*  mz_rs_20050117+ */

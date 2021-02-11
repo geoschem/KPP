@@ -29,15 +29,15 @@
 
 ******************************************************************************/
 
-#define KPP_VERSION "2.3.0_gc" /* KPP 2.3.0_gc, Bob Yantosca (11 Feb 2020)  */
+#define KPP_VERSION "2.3.0_gc" /* KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)  */
 
 #ifndef _GDATA_H_
 #define _GDATA_H_
 
 #include <stdio.h>
 
-#define MAX_EQN        1500    /* KPP 2.3.0_gc, Bob Yantosca (11 Feb 2020)  */
-#define MAX_SPECIES    1000    /* KPP 2.3.0_gc, Bob Yantosca (11 Feb 2020)  */
+#define MAX_EQN        1500    /* KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)  */
+#define MAX_SPECIES    1000    /* KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)  */
 #define MAX_SPNAME       30
 #define MAX_IVAL         40
 #define MAX_EQNTAG       12    /* Max length of equation ID in eqn file     */
