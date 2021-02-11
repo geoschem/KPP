@@ -647,7 +647,7 @@ int F_VAR, FSPLIT_VAR;
   if (useLang != MATLAB_LANG)  /* Matlab generates an additional file per function */
        UseFile( functionFile );
 
-  F_VAR      = DefFnc( "Fun",      5, "time derivatives of variables - Agregate form");
+  F_VAR      = DefFnc( "Fun",      5, "time derivatives of variables - Aggregate form");
   FSPLIT_VAR = DefFnc( "Fun_SPLIT", 6, "time derivatives of variables - Split form");
 
   if( useAggregate )

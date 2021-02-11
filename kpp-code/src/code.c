@@ -146,8 +146,16 @@ int blength;
   WriteComment("%-20s : %s", "File", bufname );
   strcpy( buf, (char*)ctime( &t ) ); 
   buf[ (int)strlen(buf) - 1 ] = 0;
+/*
+  ###########################################################################
+  ###  Do not write out changeable parameters such as file creation time  ###
+  ###  and working directory.  These will cause Git to interpret changed  ###
+  ###  files as new files that need to be committed.                      ###
+  ###     -- KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)                     ###
+  ###########################################################################
   WriteComment("%-20s : %s", "Time", buf );
   WriteComment("%-20s : %s", "Working directory", getcwd(buf, 200) );
+*/
   WriteComment("%-20s : %s", "Equation file", eqFileName );
   WriteComment("%-20s : %s", "Output root filename", rootFileName );
   WriteComment("");
