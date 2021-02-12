@@ -31,4 +31,4 @@ This branch contains modifications to KPP that were made specifically for the me
 ## Documentation:
 
 * [KPP user manual](https://github.com/geoschem/KPP/blob/main/kpp-2.2.3_01/doc/kpp_UserManual.pdf)
-* [KPP refer
+* [KPP references](https://people.cs.vt.edu/~asandu/Software/Kpp/docsforkpp.htm)
