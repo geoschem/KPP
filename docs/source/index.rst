@@ -1,5 +1,7 @@
-FlexChem: KPP adapted specifically for GEOS-Chem
-================================================
+===============================
+KPP-for-GEOS-Chem Documentation
+===============================
+
 .. raw:: html
 
  <p>
@@ -10,26 +12,45 @@ FlexChem: KPP adapted specifically for GEOS-Chem
    </p>
 	 
 
-FlexChem is '''`a clean implementation of
-the Kinetic Pre Processor (KPP)''' <https://github.com/geoschem/kpp/tree/GC_updates>`__ that has
+**KPP-for-GEOS-Chem** is `a clean implementation of
+the Kinetic Pre Processor (KPP) <https://github.com/geoschem/kpp/tree/GC_updates>`__ that has
 been customized for GEOS-Chem v11-01 and later versions. You can use
-FlexChem to modify existing GEOS-Chem mechanisms or create new
-GEOS-Chem chemistry mechanisms.
+KPP-for-GEOS-Chem to create custom GEOS-Chem Chemistry Mechanisms.
 
 .. toctree::
-   :maxdepth: 1
-   :caption: About FlexChem
+   :maxdepth: 4
+   :caption: Basic Information
 
-   about/about_kpp.rst
-   about/about_flexchem.rst	     
-   about/requirements.rst
+   basic-info/about.rst
+   basic-info/requirements.rst
+   
+.. toctree::
+   :maxdepth: 4
+   :caption: Usage Details
+
+   usage-details/installation.rst
+   usage-details/generating_f90_code.rst
+   usage-details/use_custom_mech.rst
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Getting Started
+   :maxdepth: 4
+   :caption: Creating & Modifying Mechanisms
 
-   getting_started/installation.rst
-   getting_started/compilation.rst
-   getting_started/set_env_vars.rst
-   getting_started/create_f90_code_with_kpp.rst
-   getting_started/tell_gc_to_use_custom_mech.rst
+   creating-mechanisms/configuration_files.rst 
+   creating-mechanisms/species.rst
+   creating-mechanisms/reactions.rst
+   creating-mechanisms/chemical_families.rst
+  
+  
+  
+.. toctree::
+   :maxdepth: 1
+   :caption: Help & Reference
+
+   reference/known-bugs.rst 
+   reference/SUPPORT.md
+   reference/CONTRIBUTING.md
+   geos-chem-shared-docs/editing_these_docs.rst
+   reference/git-submodules.rst
+   reference/glossary.rst
+   reference/versioning.rst
