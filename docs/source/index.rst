@@ -18,14 +18,14 @@ been customized for GEOS-Chem v11-01 and later versions. You can use
 KPP-for-GEOS-Chem to create custom GEOS-Chem Chemistry Mechanisms.
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 10
    :caption: Basic Information
 
    basic-info/about.rst
    basic-info/requirements.rst
    
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 10
    :caption: Usage Details
 
    usage-details/installation.rst
@@ -33,7 +33,7 @@ KPP-for-GEOS-Chem to create custom GEOS-Chem Chemistry Mechanisms.
    usage-details/use_custom_mech.rst
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 10
    :caption: Creating & Modifying Mechanisms
 
    creating-mechanisms/configuration_files.rst 
@@ -41,10 +41,8 @@ KPP-for-GEOS-Chem to create custom GEOS-Chem Chemistry Mechanisms.
    creating-mechanisms/reactions.rst
    creating-mechanisms/chemical_families.rst
   
-  
-  
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 10
    :caption: Help & Reference
 
    reference/known-bugs.rst 

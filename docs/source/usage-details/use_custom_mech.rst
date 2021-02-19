@@ -1,21 +1,21 @@
-===========================================
+###########################################
 Telling GEOS-Chem to use a custom mechanism
-===========================================
+###########################################
 
 ---------------------
 Configuring GEOS-Chem
 ---------------------
 
-GEOS-Chem will always use the ``fullchem`` mechanism by default.  To
-configure GEOS-Chem to use the ``custom`` mechanism instead
-of ``fullchem``, navigate to your build directory and type:
+GEOS-Chem will always use the :file:`fullchem` mechanism by default.  To
+configure GEOS-Chem to use the :file:`custom` mechanism instead
+of :fullchem:`fullchem`, navigate to your build directory and type:
 
-.. code-block:: console
+.. code-block:: none
 
   cmake ../CodeDir -DCUSTOMMECH=y
 
 .. note:: GEOS-Chem Classic run directories have a subdirectory named
-	  ``build`` in which you can configure and build GEOS-Chem.
+	  :file:`build` in which you can configure and build GEOS-Chem.
 
 	  For more information about the GEOS-Chem and GCHP
 	  configuration process, please see `GEOS-Chem manual
@@ -24,24 +24,24 @@ of ``fullchem``, navigate to your build directory and type:
   
 You should see output such as this written to the screen:
 
-.. code-block:: console
+.. code-block:: none
 
   -- General settings:
      * CUSTOMMECH:  **ON** OFF
 
-This confirms that GEOS-Chem will use the ``custom`` mechanism.
+This confirms that GEOS-Chem will use the :file:`custom` mechanism.
 
 -------------------
 Compiling GEOS-Chem
 -------------------
 
-Once you have configured GEOS-Chem to use the ``custom`` mechanism,
+Once you have configured GEOS-Chem to use the :file:`custom` mechanism,
 you may build the exectuable.  Type:
 
-.. code-block:: console
+.. code-block:: none
 
   make -j
   make -j install
 
-The executable file (``gcclassic`` or ``gchp``, depending on which
+The executable file (:file:`gcclassic` or :file:`gchp`, depending on which
 mode of GEOS-Chem that you are using) will be placed in the run directory.

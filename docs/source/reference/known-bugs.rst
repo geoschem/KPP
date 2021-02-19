@@ -1,16 +1,7 @@
 Known Bugs
 ==========
 
-This page links to known bugs in GCHP. See the GitHub issues for updates on their status.
+This page links to known bugs in KPP-for-GEOS-Chem. See the GitHub issues for updates on their status.
 
-Version 13.0
-   * https://github.com/geoschem/GCHP/issues/84
-
-Version 12.9
-   * https://github.com/geoschem/GCHP/issues/84
-
-Version 12.8
-   * https://github.com/geoschem/GCHP/issues/84
-
-Version 12.7
-   * https://github.com/geoschem/GCHP/issues/84
+Version 2.2.4_gc:
+  * https://github.com/geoschem/KPP/issues/1

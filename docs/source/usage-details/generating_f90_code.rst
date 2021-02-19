@@ -1,35 +1,35 @@
 .. _creating_fortran_files:
 
-============================================================
+############################################################
 Creating Fortran-90 chemical mechanism modules for GEOS-Chem
-============================================================
+############################################################
 
 --------------------------------------------------------
 Navigate to the KPP folder in your GEOS-Chem source code
 --------------------------------------------------------
 
-At this point you can now use KPP-for-GEOS-Chem to generate Fortran-90 source code
+At this point you can now use :program:`KPP-for-GEOS-Chem` to generate Fortran-90 source code
 files that will solve the chemical mechanism in an efficient manner.
 
-Navigate to this folder in your GEOS-Chem source code:
+Navigate to this folder in your :program:`GEOS-Chem` source code:
 
--  GEOS-Chem 12.9.3 and prior versions: ``KPP``
--  GEOS-Chem 13.0.0 and later versions: ``src/GEOS-Chem/KPP``
+-  GEOS-Chem 12.9.3 and prior versions: :file:`KPP`
+-  GEOS-Chem 13.0.0 and later versions: :file:`src/GEOS-Chem/KPP`
 -  GCHP 13.0.0 and later versions:
-   ``src/GCHP_GridComp/GEOSChem_GridComp/geos-chem/KPP``
+   :file:`src/GCHP_GridComp/GEOSChem_GridComp/geos-chem/KPP`
 
-Here you will find two sub-folders: ``fullchem`` and
-``custom``, and a script named ``build_mechanism.sh``.
+Here you will find two sub-folders: :file:`fullchem` and
+:file:`custom`, and a script named :file:`build_mechanism.sh`.
 
-The ``custom`` folder contains sample chemical mechanism
-specification files (``custom.eqn`` and ``gckpp.kpp``) which
+The :file:`custom` folder contains sample chemical mechanism
+specification files (file:`custom.eqn` and :file:`gckpp.kpp`) which
 have been copied from fullchem. You can edit these files to define your
 own custom mechanism (see subsequent sections for detailed
 instructions).
 
-.. note:: The ``fullchem`` folder contains chemical mechanism
+.. note:: The :file:`fullchem` folder contains chemical mechanism
           specification files FlexChem-KPP-generated source code for
-	  the default ``fullchem`` GEOS-Chem mechanism.  You should
+	  the default :file:`fullchem` GEOS-Chem mechanism.  You should
           leave these files untouched. This will allow you to revert
 	  to the fullchem mechanism if need be.
 
@@ -42,13 +42,13 @@ now use KPP-for-GEOS-Chem to build the source code files for GEOS-Chem.
 
 Return to the KPP folder containing ``build_mechanism.sh`` and then type:
 
-.. code-block:: console
+.. code-block:: none
 
-  ./build_mechanism.sh custom``
+   ./build_mechanism.sh custom
 
 You will see output similar to this:
 
-.. code-block:: console
+.. code-block:: none
 
   This is KPP-2.3.1_gc.
   KPP is parsing the equation file.
@@ -85,10 +85,10 @@ You will see output similar to this:
   Reactivity consists of 172 reactions
   Written to gckpp_Util.F90
 
-If this process is successful, the ``custom`` folder should now be
-populated with several ``.F90`` source code files:
+If this process is successful, the :file:`custom` folder should now be
+populated with several :file:`.F90` source code files:
 
-.. code-block:: console
+.. code-block:: none
 
   CMakeLists.txt*      gckpp_Initialize.F90  gckpp_LinearAlgebra.F90  gckpp_Precision.F90
   custom.eqn           gckpp_Integrator.F90  gckpp.map                gckpp_Rates.F90
