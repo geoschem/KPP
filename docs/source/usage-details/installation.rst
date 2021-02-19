@@ -13,9 +13,9 @@ Use this command to download the :program:`KPP-for-GEOS-Chem` source
 code from the :file:`GC_updates` branch
 of the `KPP Github repository <https://github.com/geoschem/KPP>`__:
 
-.. code-block:: none
+.. code-block:: console
 
-   git clone -b GC_updates https://github.com/geoschem/KPP.git
+   $ git clone -b GC_updates https://github.com/geoschem/KPP.git
 
 .. important:: Do not download the :program:`KPP-for-GEOS-Chem` source code into your
 	       :program:`GEOS-Chem` source code directory! This will avoid
@@ -38,11 +38,11 @@ Compiling
 
 Build the KPP-for-GEOS-Chem executable file with these commands:
 
-.. code-block:: none
+.. code-block:: console
 
-   cd KPP/kpp-code
-   make distclean
-   make all
+   $ cd KPP/kpp-code
+   $ make distclean
+   $ make all
 
 If the build completes successfully, you will see the executable file :file:`KPP/kpp-code/bin/kpp`.
 
@@ -74,5 +74,5 @@ If you use the csh or tcsh Unix shell, add these lines to your
 .. note:: 
 
   - For example, if you installed FlexChem-KPP into your home
-    directory, then  ``PATH_TO_KPP`` would be ``~/KPP``, etc.
+    directory, then  :code:`PATH_TO_KPP` would be :file:`~/KPP`, etc.
     

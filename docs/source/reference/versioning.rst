@@ -1,6 +1,0 @@
-
-
-Versioning
-==========
-
-todo

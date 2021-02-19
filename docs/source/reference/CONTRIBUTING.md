@@ -6,7 +6,7 @@ like you. Whether you're new to GEOS-Chem or a longtime user, you're a
 valued member of the community, and we want you to feel empowered to contribute.
 
 #### We use GitHub and ReadTheDocs
-We use GitHub to host the KPP-for-GEOS_Chem source code, to track issues, user questions, and feature requests, and to accept pull requests: [https://github.com/geoschem/KPP](https://github.com/geoschem/KPP). Please help out as you can in response to issues and user questions.
+We use GitHub to host the KPP-for-GEOS-Chem source code, to track issues, user questions, and feature requests, and to accept pull requests: [https://github.com/geoschem/KPP](https://github.com/geoschem/KPP). Please help out as you can in response to issues and user questions.
 
 We use ReadTheDocs to host the KPP-for-GEOS-Chem user documentation: [https://kpp.readthedocs.io](https://kpp.readthedocs.io).
 
