@@ -7,7 +7,7 @@ KPP-for-GEOS-Chem Documentation
    <p>
    <a href="https://github.com/geoschem/KPP/blob/GC_updates/LICENSE.txt"><img
    src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
-   <a href="https://doi.org/10.5281/zenodo.4537861"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4537861.svg"></a>
+   <a href="https://doi.org/10.5281/zenodo.4537860"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4537860.svg"></a>
    <a href="https://kpp.readthedocs.io/en/latest/"><img src="https://img.shields.io/readthedocs/kpp?label=ReadTheDocs"></a>
    </p>
 
