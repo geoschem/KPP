@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/geoschem/KPP/blob/GC_updates/LICENSE.txt) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4537860.svg)](https://doi.org/10.5281/zenodo.4537860) [![ReadTheDocs](https://img.shields.io/readthedocs/kpp?label=ReadTheDocs)](https://kpp.readthedocs.io/en/latest/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/geoschem/KPP/blob/GC_updates/LICENSE.txt) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4552707.svg)](https://doi.org/10.5281/zenodo.4552707) [![ReadTheDocs](https://img.shields.io/readthedocs/kpp?label=ReadTheDocs)](https://kpp.readthedocs.io/en/latest/)
 
 # README for KPP-for-GEOS-Chem
 
