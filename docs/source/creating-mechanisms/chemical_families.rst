@@ -1,5 +1,5 @@
 ###################################
-Adding Production and Loss families
+Adding production and loss families
 ###################################
 
 Certain common families (e.g. POx, LOx) have been pre-defined for you.

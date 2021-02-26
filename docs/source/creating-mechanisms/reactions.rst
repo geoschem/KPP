@@ -1,5 +1,5 @@
 ################
-Adding Reactions
+Adding reactions
 ################
 
 -------------------
@@ -269,8 +269,8 @@ follow an additional set of steps. Specifically, you will need to:
 
 For the first step, you can use tools already available on the Prather
 research group website. To generate the cross-sections used by Fast-JX,
-download the file `UCI_fastJ_addX_73cx.zip
-<ftp://128.200.14.8/public/prather/Fast-J_&_Cloud-J/UCI_fastJ_addX_73cx.zip>`__. 
+download the file `UCI_fastJ_addX_73cx.tar.gz
+<http://ftp.as.harvard.edu/gcgrid/data/ExtData/CHEM_INPUTS/FAST_JX/code/UCI_fastJ_addX_73cx.tar.gz>`__. 
 You can then simply add your data to :file:`FJX_spec.dat` and refer to it in
 :file:`FJX_j2j.dat` as specified above. The following then describes
 how to generate a new set of cross-section data for the example of some
