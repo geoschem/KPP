@@ -29,7 +29,7 @@
 
 ******************************************************************************/
 
-#define KPP_VERSION "2.3.1_gc" /* KPP 2.3.1_gc, Bob Yantosca (19 Feb 2021)  */
+#define KPP_VERSION "2.3.2_gc" /* KPP 2.3.2_gc, Bob Yantosca (26 Mar 2021)  */
 
 #ifndef _GDATA_H_
 #define _GDATA_H_
