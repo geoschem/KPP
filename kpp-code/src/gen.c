@@ -77,6 +77,11 @@ int NMLCV, NMLCF, SCT, PROPENSITY, VOLUME, IRCT;
 int FLUX_MAP;
 int FAM,NFAM;
 int Jac_NZ, LU_Jac_NZ, nzr;
+/*#########################################################################
+  ###  KPP 2.3.2_gc, Bob Yantosca (26 Mar 2021)                         ###
+  ###  Define extra arrays for needed species properties                ###
+  #########################################################################*/
+int MW, SRMW, K0, CR, PKA;
 
 NODE *sum, *prod;
 int real;
@@ -267,6 +272,16 @@ int i,j;
   PROPENSITY  = DefvElm( "Prop",  real, -NREACT, "Propensity vector" );
   VOLUME = DefElm( "Volume", real, "Volume of the reaction container" );
   IRCT  = DefElm( "IRCT", INT, "Index of chemical reaction" );
+
+/*#########################################################################
+  ###  KPP 2.3.2_gc, Bob Yantosca (26 Mar 2021)                         ###
+  ###  Define extra arrays for needed species properties                ###
+  #########################################################################*/
+  MW   = DefvElm( "MW",   real, -NSPEC, "Species molecular weight [g/mole]" );
+  SRMW = DefvElm( "SRMW", real, -NSPEC, "Square root of species molecular weight [g/mole]" );
+  K0   = DefvElm( "K0",   real, -NSPEC, "Henry's law solubility constant [M/atm]" );
+  CR   = DefvElm( "CR",   real, -NSPEC, "Henry's law volatility constant [K]" );
+  PKA  = DefvElm( "PKA",  real, -NSPEC, "Henry's law volatility constant [K]" );
 
   for ( i=0; i<EqnNr; i++ )
     for ( j=0; j<SpcNr; j++ )
@@ -674,7 +689,7 @@ int F_VAR, FSPLIT_VAR;
   } else {
     FunctionBegin( FSPLIT_VAR, V, F, RCT, P_VAR, D_VAR );
   }
- 
+
   if ( (useLang==MATLAB_LANG)&&(!useAggregate) )
      printf("\nWarning: in the function definition move P_VAR to output vars\n");
 
@@ -722,7 +737,7 @@ int F_VAR, FSPLIT_VAR;
     ###  Copy A to Aout to return reaction rates outside of KPP          ###
     ########################################################################*/
     /*---begin---*/
-    fprintf(functionFile, "\n\n!### KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)\n");
+    fprintf(functionFile, "\n\n!### KPP 2.3.2_gc, Bob Yantosca (11 Feb 2021)\n");
     fprintf(functionFile, "\!### Use Aout to return reaction rates\n");
     fprintf(functionFile, "  IF ( PRESENT( Aout ) ) Aout = A\n\n");
     /*---end---*/
@@ -2394,62 +2409,101 @@ int j,dummy_species;
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 void GenerateGlobalHeader()
 {
-int spc;
-int i;
-char name[20];
-int offs;
-int mxyz;
+  int spc;
+  int i;
+  char name[20];
+  int offs;
+  int mxyz;
+  int useFortran;
+
+/*########################################################################
+  ###  KPP 2.3.2_gc, Bob Yantosca (26 Mar 2020)                        ###
+  ###  Modify code to inline the F77/F90 THREADPRIVATE declarations    ###
+  ###  and also define the MW, SRMW, K0, CR, PKA arrays                ###
+  ########################################################################*/
+
+  /*** Define a flag to denote if we are using F90 or F77 ***/
+  if ( useLang == F90_LANG || useLang == F77_LANG ) { useFortran = 1; }
+  else                                              { useFortran = 0; }
 
   UseFile( global_dataFile );
 
   CommonName = "GDATA";
 
+  /*** Write comment header ***/
   NewLines(1);
   WriteComment("Declaration of global variables");
+  if ( useFortran ) {
+    NewLines(1);
+    WriteComment("These need to be declared threadprivate, because they");
+    WriteComment("are assigned from within an OpenMP parallel loop.");
+  }
   NewLines(1);
 
- /* ExternDeclare( C_DEFAULT ); */
-
+  /*** Declare C ***/
   ExternDeclare( C );
+  if ( useFortran ) { WriteOMPThreadPrivate("C"); }
 
-  if( useLang == F77_LANG ) {
+  /*** Declare VAR and FIX for F90 ***/
+  if ( useLang == F90_LANG ) {
+    ExternDeclare( VAR );
+    WriteOMPThreadPrivate("VAR");
 
-   Declare( VAR );
-   Declare( FIX );
-   WriteComment("VAR, FIX are chunks of array C");
-   F77_Inline("!      EQUIVALENCE( %s(%d),%s(1) )",
-            varTable[C]->name, 1, varTable[VAR]->name );
-   if ( FixNr > 0 ) { /*  mz_rs_20050121 */
-     F77_Inline("!      EQUIVALENCE( %s(%d),%s(1) )",
-       varTable[C]->name, VarNr+1, varTable[FIX]->name );
-   }
+    ExternDeclare( FIX );
+    WriteOMPThreadPrivate("FIX");
   }
 
-  if( useLang == F90_LANG ) {
-     ExternDeclare( VAR );
-     ExternDeclare( FIX );
-     WriteComment("VAR, FIX are chunks of array C");
-     F90_Inline("!      EQUIVALENCE( %s(%d),%s(1) )",
-            varTable[C]->name, 1, varTable[VAR]->name );
-     if ( FixNr > 0 ) { /*  mz_rs_20050121 */
-       F90_Inline("!      EQUIVALENCE( %s(%d),%s(1) )",
-         varTable[C]->name, VarNr+1, varTable[FIX]->name );
-     }
+  /*** Declare VAR and fix for F77 ***/
+  if ( useLang == F77_LANG ) {
+    Declare( VAR );
+    WriteOMPThreadPrivate("VAR");
+    WriteComment("VAR, FIX are chunks of array C");
+    F77_Inline("!      EQUIVALENCE( %s(%d),%s(1) )",
+	       varTable[C]->name, 1, varTable[VAR]->name );
+
+    Declare( FIX );
+    WriteOMPThreadPrivate("FIX");
+    if ( FixNr > 0 ) {
+      F77_Inline("!      EQUIVALENCE( %s(%d),%s(1) )",
+		 varTable[C]->name, VarNr+1, varTable[FIX]->name );
+    }
   }
 
-  if( useLang == MATLAB_LANG ) {
-     ExternDeclare( VAR );
-     ExternDeclare( FIX );
+  /*** Declare VAR and FIX for MatLab ***/
+  if ( useLang == MATLAB_LANG ) {
+    ExternDeclare( VAR );
+    ExternDeclare( FIX );
   }
+
+  /*** Declare all other variables ***/
+  ExternDeclare( RCONST );
+  if ( useFortran ) { WriteOMPThreadPrivate("RCONST"); }
+
+  ExternDeclare( TIME );
+  if ( useFortran ) { WriteOMPThreadPrivate("TIME"); }
+
+  ExternDeclare( TEMP );
+  if ( useFortran ) { WriteOMPThreadPrivate("TEMP"); }
+
+  ExternDeclare( CFACTOR );
+  if ( useFortran ) { WriteOMPThreadPrivate("CFACTOR"); }
 
   C_Inline("  extern %s * %s;", C_types[real], varTable[VAR]->name );
   C_Inline("  extern %s * %s;", C_types[real], varTable[FIX]->name );
 
+  NewLines(1);
+  if ( useFortran ) {
+    WriteComment("These variables are defined outside of an OpenMP parallel");
+    WriteComment("loop, and thus do not need to be declared threadprivate.");
+    NewLines(1);
+  }
 
-  ExternDeclare( RCONST );
-  ExternDeclare( TIME );
+  ExternDeclare( MW   );
+  ExternDeclare( SRMW );
+  ExternDeclare( K0   );
+  ExternDeclare( CR   );
+  ExternDeclare( PKA  );
   ExternDeclare( SUN );
-  ExternDeclare( TEMP );
   ExternDeclare( RTOLS );
   ExternDeclare( TSTART );
   ExternDeclare( TEND );
@@ -2458,7 +2512,6 @@ int mxyz;
   ExternDeclare( RTOL );
   ExternDeclare( STEPMIN );
   ExternDeclare( STEPMAX );
-  ExternDeclare( CFACTOR );
   if (useStochastic)
       ExternDeclare( VOLUME );
 
