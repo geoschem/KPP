@@ -219,7 +219,7 @@ char buf[ MAX_LINE ];
   for (n= strlen(buf) - 1; n >= 0; n--)
     if (buf[n] != ' ') break;
   buf[n + 1]= '\0';
-  bprintf( "!$OMP THREADPRIVATE( %s )\n", buf );
+  bprintf( "  !$OMP THREADPRIVATE( %s )\n", buf );
   FlushBuf();
 }
 
