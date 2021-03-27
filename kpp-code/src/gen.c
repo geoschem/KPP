@@ -79,9 +79,9 @@ int FAM,NFAM;
 int Jac_NZ, LU_Jac_NZ, nzr;
 /*#########################################################################
   ###  KPP 2.3.2_gc, Bob Yantosca (26 Mar 2021)                         ###
-  ###  Define extra arrays for needed species properties                ###
+  ###  Define extra arrays and scalars                                  ###
   #########################################################################*/
-int MW, SRMW, K0, CR, PKA;
+int MW, SR_MW, SR_TEMP, K300_OVER_TEMP, TEMP_OVER_K300, NUMDEN;
 
 NODE *sum, *prod;
 int real;
@@ -275,13 +275,14 @@ int i,j;
 
 /*#########################################################################
   ###  KPP 2.3.2_gc, Bob Yantosca (26 Mar 2021)                         ###
-  ###  Define extra arrays for needed species properties                ###
+  ###  Define extra arrays and scalars                                  ###
   #########################################################################*/
   MW   = DefvElm( "MW",   real, -NSPEC, "Species molecular weight [g/mole]" );
-  SRMW = DefvElm( "SRMW", real, -NSPEC, "Square root of species molecular weight [g/mole]" );
-  K0   = DefvElm( "K0",   real, -NSPEC, "Henry's law solubility constant [M/atm]" );
-  CR   = DefvElm( "CR",   real, -NSPEC, "Henry's law volatility constant [K]" );
-  PKA  = DefvElm( "PKA",  real, -NSPEC, "Henry's law volatility constant [K]" );
+  SR_MW = DefvElm( "SR_MW", real, -NSPEC, "Square root of species molecular weight [g/mole]" );
+  SR_TEMP  = DefElm( "SR_TEMP", real, "Square root of Temperature [K**0.5]" );
+  K300_OVER_TEMP = DefElm( "K300_OVER_TEMP", real, "300.0 / Temperature [K]" );
+  TEMP_OVER_K300 = DefElm( "TEMP_OVER_K300", real, "Temperature [K] / 300.0");
+  NUMDEN = DefElm( "NUMDEN", real, "Air number density [#/cm3]");
 
   for ( i=0; i<EqnNr; i++ )
     for ( j=0; j<SpcNr; j++ )
@@ -345,6 +346,7 @@ char *EQN_TAGS[MAX_EQN];
 char *bufeqn, *p;
 int dim;
 
+/*** NOTE: This is only for C and Matlab, not Fortran ***/
   if ( (useLang != C_LANG)&&(useLang != MATLAB_LANG) ) return;
 
   UseFile( driverFile );
@@ -360,7 +362,7 @@ int dim;
 
   GlobalDeclare( RCONST );
   GlobalDeclare( TIME );
-  GlobalDeclare( SUN );
+  GlobalDeclare( SUN ); 
   GlobalDeclare( TEMP );
   GlobalDeclare( RTOLS );
   GlobalDeclare( TSTART );
@@ -2415,11 +2417,11 @@ void GenerateGlobalHeader()
   int offs;
   int mxyz;
   int useFortran;
-
+  
 /*########################################################################
   ###  KPP 2.3.2_gc, Bob Yantosca (26 Mar 2020)                        ###
   ###  Modify code to inline the F77/F90 THREADPRIVATE declarations    ###
-  ###  and also define the MW, SRMW, K0, CR, PKA arrays                ###
+  ###  and also declare extra arrays and scalars                       ###
   ########################################################################*/
 
   /*** Define a flag to denote if we are using F90 or F77 ***/
@@ -2435,12 +2437,13 @@ void GenerateGlobalHeader()
   WriteComment("Declaration of global variables");
   if ( useFortran ) {
     NewLines(1);
-    WriteComment("These need to be declared threadprivate, because they");
-    WriteComment("are assigned from within an OpenMP parallel loop.");
+    WriteComment("These quantities vary with lon/lat/lev location.");
+    WriteComment("They must be declared THREADPRIVATE for the parallel");
+    WriteComment("loop over all cells in the chemistry grid.");
   }
   NewLines(1);
 
-  /*** Declare C ***/
+  /*** Declare C, concentration array ***/
   ExternDeclare( C );
   if ( useFortran ) { WriteOMPThreadPrivate("C"); }
 
@@ -2475,35 +2478,45 @@ void GenerateGlobalHeader()
     ExternDeclare( FIX );
   }
 
-  /*** Declare all other variables ***/
+  /*** Declare all other threadprivate variables ***/
   ExternDeclare( RCONST );
   if ( useFortran ) { WriteOMPThreadPrivate("RCONST"); }
 
   ExternDeclare( TIME );
   if ( useFortran ) { WriteOMPThreadPrivate("TIME"); }
-
+  
   ExternDeclare( TEMP );
   if ( useFortran ) { WriteOMPThreadPrivate("TEMP"); }
+
+  ExternDeclare( SR_TEMP );
+  if ( useFortran ) { WriteOMPThreadPrivate("SR_TEMP"); }
+
+  ExternDeclare( TEMP_OVER_K300 );
+  if ( useFortran ) { WriteOMPThreadPrivate("TEMP_OVER_K300"); }
+
+  ExternDeclare( K300_OVER_TEMP );
+  if ( useFortran ) { WriteOMPThreadPrivate("K300_OVER_TEMP"); }
 
   ExternDeclare( CFACTOR );
   if ( useFortran ) { WriteOMPThreadPrivate("CFACTOR"); }
 
+  ExternDeclare( NUMDEN );
+  if ( useFortran ) { WriteOMPThreadPrivate("NUMDEN"); }  
+  
   C_Inline("  extern %s * %s;", C_types[real], varTable[VAR]->name );
   C_Inline("  extern %s * %s;", C_types[real], varTable[FIX]->name );
 
+  /*** Declare non-threadprivate variables ***/
   NewLines(1);
   if ( useFortran ) {
-    WriteComment("These variables are defined outside of an OpenMP parallel");
-    WriteComment("loop, and thus do not need to be declared threadprivate.");
+    WriteComment("These variables do not vary with location, and can be");
+    WriteComment("assigned outside of the parallel loop over cells in the");
+    WriteComment("chemistry grid.  These do not need to be THREADPRIVATE.");
     NewLines(1);
   }
 
   ExternDeclare( MW   );
-  ExternDeclare( SRMW );
-  ExternDeclare( K0   );
-  ExternDeclare( CR   );
-  ExternDeclare( PKA  );
-  ExternDeclare( SUN );
+  ExternDeclare( SR_MW );
   ExternDeclare( RTOLS );
   ExternDeclare( TSTART );
   ExternDeclare( TEND );
