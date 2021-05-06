@@ -2073,7 +2073,7 @@ int dim;
 void str_replace(char *target, const char *needle, const char *replacement)
 {
 /*#########################################################################
-  ###  KPP 2.3.3_gc, Bob Yantosca (06 May 2021)                         ###
+  ###  KPP 2.3.2_gc, Bob Yantosca (06 May 2021)                         ###
   ###  Add function to replace character in a string.  This is used     ###
   ###  for replacing "~" with "%" in the inlined rate-law functions.    ###
   ###  This overcomes the problem where "%" is interpreted as the       ###
@@ -2126,7 +2126,7 @@ void GenerateRateLaws()
   UseFile( rateFile );
 
 /*#########################################################################
-  ###  KPP 2.3.3_gc, Bob Yantosca (06 May 2021)                         ###
+  ###  KPP 2.3.2_gc, Bob Yantosca (06 May 2021)                         ###
   ###  Do not print out default rate-law functions for GEOS-Chem,       ###
   ###  as we only need the ones that are defined in gckpp.kpp           ###
   #########################################################################
@@ -2151,7 +2151,7 @@ void GenerateRateLaws()
       bprintf( InlineCode[ F77_RATES ].code );
       break;
 /*#########################################################################
-  ###  KPP 2.3.3_gc, Bob Yantosca (06 May 2021)                         ###
+  ###  KPP 2.3.2_gc, Bob Yantosca (06 May 2021)                         ###
   ###  Call function str_replace to replace "=>" with "%%%%".           ###
   ###  This will render as "%%" going into bprintf, which will print    ###
   ###  tot he gckpp_Rates.F90 file as "%".  This is a workaround in     ###
