@@ -2068,6 +2068,56 @@ int dim;
   FreeIntegerMatrix(pos, dim+1, dim+1);
 }
 
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+void str_replace(char *target, const char *needle, const char *replacement)
+{
+/*#########################################################################
+  ###  KPP 2.3.3_gc, Bob Yantosca (06 May 2021)                         ###
+  ###  Add function to replace character in a string.  This is used     ###
+  ###  for replacing "~" with "%" in the inlined rate-law functions.    ###
+  ###  This overcomes the problem where "%" is interpreted as the       ###
+  ###  printf format specifier.  For more information, please see:      ###
+  ###                                                                   ### 
+  ###    https://stackoverflow.com/questions/32413667/                  ###
+  ###     replace-all-occurrences-of-a-substring-in-a-string-in-c       ###
+  ###                                                                   ###
+  ###  Note: This string replacement could also have been done with     ###
+  ###  Flex/Bison, but this is a much faster (and straightforward)      ###
+  ###  solution.                                                        ###
+  #########################################################################*/
+  
+  char buffer[MAX_INLINE] = { 0 };
+  char *insert_point = &buffer[0];
+  const char *tmp = target;
+  size_t needle_len = strlen(needle);
+  size_t repl_len = strlen(replacement);
+  
+  while (1) {
+    const char *p = strstr(tmp, needle);
+
+    // walked past last occurrence of needle; copy remaining part
+    if (p == NULL) {
+      strcpy(insert_point, tmp);
+      break;
+    }
+
+    // copy part before needle
+    memcpy(insert_point, tmp, p - tmp);
+    insert_point += p - tmp;
+
+    // copy replacement string
+    memcpy(insert_point, replacement, repl_len);
+    insert_point += repl_len;
+    
+    // adjust pointers, move on
+    tmp = p + needle_len;
+  }
+
+  // write altered string back to target
+  strcpy(target, buffer);
+}
+
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 void GenerateRateLaws()
@@ -2075,6 +2125,11 @@ void GenerateRateLaws()
 
   UseFile( rateFile );
 
+/*#########################################################################
+  ###  KPP 2.3.3_gc, Bob Yantosca (06 May 2021)                         ###
+  ###  Do not print out default rate-law functions for GEOS-Chem,       ###
+  ###  as we only need the ones that are defined in gckpp.kpp           ###
+  #########################################################################
   NewLines(1);
   WriteComment("Begin Rate Law Functions from KPP_HOME/util/UserRateLaws");
   NewLines(1);
@@ -2082,20 +2137,34 @@ void GenerateRateLaws()
   NewLines(1);
   WriteComment("End Rate Law Functions from KPP_HOME/util/UserRateLaws");
   NewLines(1);
+*/
 
   NewLines(1);
   WriteComment("Begin INLINED Rate Law Functions");
   NewLines(1);
 
   switch( useLang ) {
-    case C_LANG:  bprintf( InlineCode[ C_RATES ].code );
-                 break;
-    case F77_LANG: bprintf( InlineCode[ F77_RATES ].code );
-                 break;
-    case F90_LANG: bprintf( InlineCode[ F90_RATES ].code );
-                 break;
-    case MATLAB_LANG: bprintf( InlineCode[ MATLAB_RATES ].code );
-                 break;
+    case C_LANG:
+      bprintf( InlineCode[ C_RATES ].code );
+      break;
+    case F77_LANG:
+      bprintf( InlineCode[ F77_RATES ].code );
+      break;
+/*#########################################################################
+  ###  KPP 2.3.3_gc, Bob Yantosca (06 May 2021)                         ###
+  ###  Call function str_replace to replace "=>" with "%%%%".           ###
+  ###  This will render as "%%" going into bprintf, which will print    ###
+  ###  tot he gckpp_Rates.F90 file as "%".  This is a workaround in     ###
+  ###  order to have KPP be able to inline code with Fortran-90         ###
+  ###  derived types.                                                   ###
+  #########################################################################*/
+    case F90_LANG:
+      str_replace( InlineCode[ F90_RATES ].code, "=>", "%%%%");
+      bprintf( InlineCode[ F90_RATES ].code );
+      break;
+    case MATLAB_LANG:
+      bprintf( InlineCode[ MATLAB_RATES ].code );
+      break;
   }
   FlushBuf();
 
@@ -3088,18 +3157,18 @@ case 'h':
     FatalError(3,"%s: Can't create file", buf );
   }
   UseFile( sparse_dataFile );
-  F90_Inline("\nMODULE %s_Precision\n", rootFileName );
-  F90_Inline("!");
-  F90_Inline("! Definition of different levels of accuracy");
-  F90_Inline("! for REAL variables using KIND parameterization");
-  F90_Inline("!");
-  F90_Inline("! KPP SP - Single precision kind");
-  F90_Inline("  INTEGER, PARAMETER :: sp = SELECTED_REAL_KIND(6,30)");
-  F90_Inline("! KPP DP - Double precision kind");
-  F90_Inline("  INTEGER, PARAMETER :: dp = SELECTED_REAL_KIND(14,300)");
-  F90_Inline("! KPP QP - Quadruple precision kind");
-  F90_Inline("  INTEGER, PARAMETER :: qp = SELECTED_REAL_KIND(18,400)");
-  F90_Inline("\nEND MODULE %s_Precision\n\n", rootFileName );
+    F90_Inline("\nMODULE %s_Precision\n", rootFileName );
+    F90_Inline("!");
+    F90_Inline("! Definition of different levels of accuracy");
+    F90_Inline("! for REAL variables using KIND parameterization");
+    F90_Inline("!");
+    F90_Inline("! KPP SP - Single precision kind");
+    F90_Inline("  INTEGER, PARAMETER :: sp = SELECTED_REAL_KIND(6,30)");
+    F90_Inline("! KPP DP - Double precision kind");
+    F90_Inline("  INTEGER, PARAMETER :: dp = SELECTED_REAL_KIND(14,300)");
+    F90_Inline("! KPP QP - Quadruple precision kind");
+    F90_Inline("  INTEGER, PARAMETER :: qp = SELECTED_REAL_KIND(18,400)");
+    F90_Inline("\nEND MODULE %s_Precision\n\n", rootFileName );
 
   UseFile( initFile );
     F90_Inline("MODULE %s_Initialize\n", rootFileName );
