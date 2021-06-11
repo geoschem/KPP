@@ -91,7 +91,7 @@ void AddLumpSpecies( char *spname );
 void CheckLump( char *spname );
 void AddLookAt( char *spname );
 void AddMonitor( char *spname );
-guivoid AddTransport( char *spname );
+void AddTransport( char *spname );
 
 void WriteAtoms();
 void WriteSpecies();
