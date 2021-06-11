@@ -77,11 +77,12 @@ int NMLCV, NMLCF, SCT, PROPENSITY, VOLUME, IRCT;
 int FLUX_MAP;
 int FAM,NFAM;
 int Jac_NZ, LU_Jac_NZ, nzr;
-/*#########################################################################
-  ###  KPP 2.3.2_gc, Bob Yantosca (26 Mar 2021)                         ###
-  ###  Define extra arrays and scalars                                  ###
-  #########################################################################*/
+//===========================================================================
+// KPP 2.3.2_gc, Bob Yantosca (26 Mar 2021)
+// Define extra arrays and scalars
+//
 int MW, SR_MW, SR_TEMP, K300_OVER_TEMP, TEMP_OVER_K300, NUMDEN;
+//===========================================================================
 
 NODE *sum, *prod;
 int real;
@@ -273,16 +274,23 @@ int i,j;
   VOLUME = DefElm( "Volume", real, "Volume of the reaction container" );
   IRCT  = DefElm( "IRCT", INT, "Index of chemical reaction" );
 
-/*#########################################################################
-  ###  KPP 2.3.2_gc, Bob Yantosca (26 Mar 2021)                         ###
-  ###  Define extra arrays and scalars                                  ###
-  #########################################################################*/
-  MW   = DefvElm( "MW",   real, -NSPEC, "Species molecular weight [g/mole]" );
-  SR_MW = DefvElm( "SR_MW", real, -NSPEC, "Square root of species molecular weight [g/mole]" );
-  SR_TEMP  = DefElm( "SR_TEMP", real, "Square root of Temperature [K**0.5]" );
-  K300_OVER_TEMP = DefElm( "K300_OVER_TEMP", real, "300.0 / Temperature [K]" );
-  TEMP_OVER_K300 = DefElm( "TEMP_OVER_K300", real, "Temperature [K] / 300.0");
-  NUMDEN = DefElm( "NUMDEN", real, "Air number density [#/cm3]");
+//===========================================================================
+// KPP 2.3.2_gc, Bob Yantosca (26 Mar 2021)
+// Define extra arrays and scalars for gckpp_Global.F90
+//
+  MW = DefvElm( "MW",   real, -NSPEC,
+		"Species molecular weight [g/mole]" );
+  SR_MW = DefvElm( "SR_MW", real, -NSPEC,
+		   "Square root of species molecular weight [g/mole]" );
+  SR_TEMP = DefElm( "SR_TEMP", real,
+		    "Square root of Temperature [K**0.5]" );
+  K300_OVER_TEMP = DefElm( "K300_OVER_TEMP", real,
+			   "300.0 / Temperature [K]" );
+  TEMP_OVER_K300 = DefElm( "TEMP_OVER_K300", real,
+			   "Temperature [K] / 300.0");
+  NUMDEN = DefElm( "NUMDEN", real,
+		   "Air number density [#/cm3]");
+//===========================================================================
 
   for ( i=0; i<EqnNr; i++ )
     for ( j=0; j<SpcNr; j++ )
@@ -362,7 +370,7 @@ int dim;
 
   GlobalDeclare( RCONST );
   GlobalDeclare( TIME );
-  GlobalDeclare( SUN ); 
+  GlobalDeclare( SUN );
   GlobalDeclare( TEMP );
   GlobalDeclare( RTOLS );
   GlobalDeclare( TSTART );
@@ -656,14 +664,13 @@ int F_VAR, FSPLIT_VAR;
   FSPLIT_VAR = DefFnc( "Fun_SPLIT", 5, "time derivatives of variables - Split form");
 
   if( useAggregate ) {
-  /*########################################################################
-    ###  KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)                        ###
-    ###  Manually declare Aout as an optional variable.  We cannot use   ###
-    ###  routine FunctionBegin, because this has no way of defining      ###
-    ###  optional Fortran90 arguments.  Therefore we will just           ###
-    ###  write this using C-language fprintf statements.                 ###
-    ########################################################################*/
-    /*---begin---*/
+//===========================================================================
+// KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)
+// Manually declare Aout as an optional variable.  We cannot use
+// routine FunctionBegin, because this has no way of defining
+// optional Fortran90 arguments.  Therefore we will just
+// write this using C-language fprintf statements.
+//
     fprintf(functionFile, "! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
     fprintf(functionFile, "!\n");
     fprintf(functionFile, "! Fun - time derivatives of variables - Aggregate form\n");
@@ -687,7 +694,7 @@ int F_VAR, FSPLIT_VAR;
     fprintf(functionFile, "!### KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)\n");
     fprintf(functionFile, "!### Aout - Array for returning KPP reaction rates for diagnostics\n");
     fprintf(functionFile, "  REAL(kind=dp), OPTIONAL :: Aout(NREACT)\n");
-    /*---end---*/
+//===========================================================================
   } else {
     FunctionBegin( FSPLIT_VAR, V, F, RCT, P_VAR, D_VAR );
   }
@@ -734,15 +741,15 @@ int F_VAR, FSPLIT_VAR;
   }
 
   if( useAggregate ) {
-  /*########################################################################
-    ###  KPP 2.3.0_gc, Bob Yantosca (11 Feb 2020)                        ###
-    ###  Copy A to Aout to return reaction rates outside of KPP          ###
-    ########################################################################*/
-    /*---begin---*/
-    fprintf(functionFile, "\n\n!### KPP 2.3.2_gc, Bob Yantosca (11 Feb 2021)\n");
+//===========================================================================
+// KPP 2.3.0_gc, Bob Yantosca (11 Feb 2021)
+// Copy A to Aout to return reaction rates outside of KPP
+//
+    fprintf(functionFile,
+	    "\n\n!### KPP 2.3.2_gc, Bob Yantosca (11 Feb 2021)\n");
     fprintf(functionFile, "\!### Use Aout to return reaction rates\n");
     fprintf(functionFile, "  IF ( PRESENT( Aout ) ) Aout = A\n\n");
-    /*---end---*/
+//===========================================================================
 
     NewLines(1);
     WriteComment("Aggregate function");
@@ -2072,27 +2079,28 @@ int dim;
 
 void str_replace(char *target, const char *needle, const char *replacement)
 {
-/*#########################################################################
-  ###  KPP 2.3.2_gc, Bob Yantosca (06 May 2021)                         ###
-  ###  Add function to replace character in a string.  This is used     ###
-  ###  for replacing "~" with "%" in the inlined rate-law functions.    ###
-  ###  This overcomes the problem where "%" is interpreted as the       ###
-  ###  printf format specifier.  For more information, please see:      ###
-  ###                                                                   ### 
-  ###    https://stackoverflow.com/questions/32413667/                  ###
-  ###     replace-all-occurrences-of-a-substring-in-a-string-in-c       ###
-  ###                                                                   ###
-  ###  Note: This string replacement could also have been done with     ###
-  ###  Flex/Bison, but this is a much faster (and straightforward)      ###
-  ###  solution.                                                        ###
-  #########################################################################*/
-  
+
+//===========================================================================
+// KPP 2.3.2_gc, Bob Yantosca (06 May 2021)
+// Add function to replace character in a string.  This is used
+// for replacing "~" with "%" in the inlined rate-law functions.
+// This overcomes the problem where "%" is interpreted as the
+// printf format specifier.  For more information, please see:
+//
+//   https://stackoverflow.com/questions/32413667/
+//    replace-all-occurrences-of-a-substring-in-a-string-in-c
+//
+// Note: This string replacement could also have been done with
+// Flex/Bison, but this is a much faster (and straightforward)
+// solution.
+//===========================================================================
+
   char buffer[MAX_INLINE] = { 0 };
   char *insert_point = &buffer[0];
   const char *tmp = target;
   size_t needle_len = strlen(needle);
   size_t repl_len = strlen(replacement);
-  
+
   while (1) {
     const char *p = strstr(tmp, needle);
 
@@ -2109,7 +2117,7 @@ void str_replace(char *target, const char *needle, const char *replacement)
     // copy replacement string
     memcpy(insert_point, replacement, repl_len);
     insert_point += repl_len;
-    
+
     // adjust pointers, move on
     tmp = p + needle_len;
   }
@@ -2125,19 +2133,19 @@ void GenerateRateLaws()
 
   UseFile( rateFile );
 
-/*#########################################################################
-  ###  KPP 2.3.2_gc, Bob Yantosca (06 May 2021)                         ###
-  ###  Do not print out default rate-law functions for GEOS-Chem,       ###
-  ###  as we only need the ones that are defined in gckpp.kpp           ###
-  #########################################################################
-  NewLines(1);
-  WriteComment("Begin Rate Law Functions from KPP_HOME/util/UserRateLaws");
-  NewLines(1);
-  IncludeCode( "%s/util/UserRateLaws", Home );
-  NewLines(1);
-  WriteComment("End Rate Law Functions from KPP_HOME/util/UserRateLaws");
-  NewLines(1);
-*/
+//===========================================================================
+// KPP 2.3.2_gc, Bob Yantosca (06 May 2021)
+// Do not print out default rate-law functions for GEOS-Chem,
+// as we only need the ones that are defined in gckpp.kpp
+//
+//  NewLines(1);
+//  WriteComment("Begin Rate Law Functions from KPP_HOME/util/UserRateLaws");
+//  NewLines(1);
+//  IncludeCode( "%s/util/UserRateLaws", Home );
+//  NewLines(1);
+//  WriteComment("End Rate Law Functions from KPP_HOME/util/UserRateLaws");
+//  NewLines(1);
+//===========================================================================
 
   NewLines(1);
   WriteComment("Begin INLINED Rate Law Functions");
@@ -2150,16 +2158,16 @@ void GenerateRateLaws()
     case F77_LANG:
       bprintf( InlineCode[ F77_RATES ].code );
       break;
-/*#########################################################################
-  ###  KPP 2.3.2_gc, Bob Yantosca (06 May 2021)                         ###
-  ###  Call function str_replace to replace "=>" with "%%%%".           ###
-  ###  This will render as "%%" going into bprintf, which will print    ###
-  ###  tot he gckpp_Rates.F90 file as "%".  This is a workaround in     ###
-  ###  order to have KPP be able to inline code with Fortran-90         ###
-  ###  derived types.                                                   ###
-  #########################################################################*/
     case F90_LANG:
+//===========================================================================
+// KPP 2.3.2_gc, Bob Yantosca (06 May 2021)
+// Call function str_replace to replace "=>" with "%%%%".
+// This will render as "%%" going into bprintf, which will print
+// tot he gckpp_Rates.F90 file as "%".  This is a workaround in
+// order to have KPP be able to inline code with Fortran-90
+// derived types.
       str_replace( InlineCode[ F90_RATES ].code, "=>", "%%%%");
+//===========================================================================
       bprintf( InlineCode[ F90_RATES ].code );
       break;
     case MATLAB_LANG:
@@ -2375,7 +2383,7 @@ void GenerateParamHeader()
 {
 int spc;
 int i;
-char name[20];
+char name[ MAX_SPNAME ];
 int offs;
 int mxyz;
 
@@ -2486,12 +2494,13 @@ void GenerateGlobalHeader()
   int offs;
   int mxyz;
   int useFortran;
-  
-/*########################################################################
-  ###  KPP 2.3.2_gc, Bob Yantosca (26 Mar 2020)                        ###
-  ###  Modify code to inline the F77/F90 THREADPRIVATE declarations    ###
-  ###  and also declare extra arrays and scalars                       ###
-  ########################################################################*/
+
+
+//===========================================================================
+// KPP 2.3.2_gc, Bob Yantosca (26 Mar 2021)
+// Modify code to inline the F77/F90 THREADPRIVATE declarations
+// and also declare extra arrays and scalars
+//===========================================================================
 
   /*** Define a flag to denote if we are using F90 or F77 ***/
   if ( useLang == F90_LANG || useLang == F77_LANG ) { useFortran = 1; }
@@ -2553,7 +2562,7 @@ void GenerateGlobalHeader()
 
   ExternDeclare( TIME );
   if ( useFortran ) { WriteOMPThreadPrivate("TIME"); }
-  
+
   ExternDeclare( TEMP );
   if ( useFortran ) { WriteOMPThreadPrivate("TEMP"); }
 
@@ -2570,8 +2579,8 @@ void GenerateGlobalHeader()
   if ( useFortran ) { WriteOMPThreadPrivate("CFACTOR"); }
 
   ExternDeclare( NUMDEN );
-  if ( useFortran ) { WriteOMPThreadPrivate("NUMDEN"); }  
-  
+  if ( useFortran ) { WriteOMPThreadPrivate("NUMDEN"); }
+
   C_Inline("  extern %s * %s;", C_types[real], varTable[VAR]->name );
   C_Inline("  extern %s * %s;", C_types[real], varTable[FIX]->name );
 
@@ -3136,13 +3145,13 @@ char buf[200], suffix[5];
 void GenerateF90Modules(char where)
 {
 
-/*#########################################################################
-  ###  KPP 2.3.0_gc, Bob Yantosca (11 Feb 2020)                         ###
-  ###  NOTE: Use the .F90 suffix instead of .f90, because .F90 denotes  ###
-  ###  non-preprocessed source code, whereas .f90 denotes source code   ###
-  ###  with header files inlined.  This update was added into the       ###
-  ###  GC_updates branch for KPP version 2.3.0_gc.                      ###
-  #########################################################################*/
+//===========================================================================
+// KPP 2.3.0_gc, Bob Yantosca (11 Feb 2020)
+// NOTE: Use the .F90 suffix instead of .f90, because .F90 denotes
+// non-preprocessed source code, whereas .f90 denotes source code
+// with header files inlined.  This update was added into the
+// GC_updates branch for KPP version 2.3.0_gc.
+//===========================================================================
 
 char buf[200];
 
