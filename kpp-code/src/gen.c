@@ -2166,9 +2166,15 @@ void GenerateRateLaws()
 // tot he gckpp_Rates.F90 file as "%".  This is a workaround in
 // order to have KPP be able to inline code with Fortran-90
 // derived types.
-      str_replace( InlineCode[ F90_RATES ].code, "=>", "%%%%");
+//
+// KPP 2.3.3_gc, Bob Yantosca (11 Jun 2021)
+// Also make sure the F90_RATES inline text is not null before printing.
+//
+      if ( strlen(InlineCode[ F90_RATES ].code) > 0 ) {
+	  str_replace( InlineCode[ F90_RATES ].code, "=>", "%%%%");
+	  bprintf( InlineCode[ F90_RATES ].code );
+	}
 //===========================================================================
-      bprintf( InlineCode[ F90_RATES ].code );
       break;
     case MATLAB_LANG:
       bprintf( InlineCode[ MATLAB_RATES ].code );
@@ -3521,7 +3527,15 @@ int n;
   printf("\n    - %s_Rates",rootFileName);
 
   GenerateRateLaws();
-  GenerateUpdateSun();
+//===========================================================================
+// KPP 2.3.3_gc, Bob Yantosca (11 Jun 2021)
+// Comment out the function call that pastes the UPDATE_SUN function into
+// the gckpp_Rates.F90 file.  This is not needed for GEOS-Chem and most
+// other external models, as photo rates are usually computed externally
+// and passed in.
+//
+//  GenerateUpdateSun();
+//===========================================================================
   GenerateUpdateRconst();
   GenerateUpdatePhoto();
   GenerateGetMass();
