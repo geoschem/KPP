@@ -2,11 +2,19 @@
 # Compiles KPP source code
 
 #-----------------------------------------------------------------------------
+# Copy the CMake project version number to the version.h file
+#-----------------------------------------------------------------------------
+message("Creating ${CMAKE_CURRENT_SOURCE_DIR}/version.h")
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/version.h @ONLY
+)
+
+#-----------------------------------------------------------------------------
 # Use the parser (Bison) to create y.tab.c
 # Use the scanner (Flex) to create lex.yy.c
 #-----------------------------------------------------------------------------
-BISON_TARGET(MyParser scan.y ${PROJECT_SOURCE_DIR}/kpp-code/src/y.tab.c)
-FLEX_TARGET(MyScanner scan.l ${PROJECT_SOURCE_DIR}/kpp-code/src/lex.yy.c)
+BISON_TARGET(MyParser scan.y ${CMAKE_CURRENT_SOURCE_DIR}/y.tab.c)
+FLEX_TARGET(MyScanner scan.l ${CMAKE_CURRENT_SOURCE_DIR}/lex.yy.c)
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
 #-----------------------------------------------------------------------------
@@ -20,6 +28,7 @@ add_library(KppSource
   gdata.h
   gdef.h
   scan.h
+  version.h
 
   # C-language files
   ${BISON_MyParser_OUTPUTS}

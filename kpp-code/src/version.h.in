@@ -1,0 +1,5 @@
+// version.h.in -- Lets CMake inline the version number.
+// This template file will be used to create version.h,
+// which in turn is #included in gdata.h.
+
+#define KPP_VERSION "@PROJECT_VERSION@"

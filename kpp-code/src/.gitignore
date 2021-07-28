@@ -1,3 +1,4 @@
+*~
 *.o
 *.a
 *.log
@@ -6,3 +7,4 @@ y.tab.c
 y.tab.h
 kpp-2.2.3_01
 CMakeFiles
+version.h
