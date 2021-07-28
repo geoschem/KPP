@@ -155,8 +155,6 @@ pretty_print(SECTION "Useful CMake variables")
 pretty_print(VARIABLE PROJECT_SOURCE_DIR)
 pretty_print(VARIABLE CMAKE_BINARY_DIR)
 pretty_print(VARIABLE CMAKE_BUILD_TYPE)
-pretty_print(VARIABLE FLEX_INCLUDE_DIR)
-pretty_print(VARIABLE FLEX_LIBRARIES)
 
 #-----------------------------------------------------------------------------
 # Write KppBuildProperties's configuration to a file

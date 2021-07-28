@@ -20,6 +20,7 @@ add_executable(${EXE_FILE_NAME} src/kpp.c)
 #-----------------------------------------------------------------------------
 target_link_libraries(${EXE_FILE_NAME}
   PUBLIC
+  KppFlex
   KppSource
   ${FLEX_LIBRARIES}
 )
