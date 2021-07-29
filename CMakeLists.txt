@@ -34,9 +34,6 @@ endif()
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/CMakeScripts)
 include(KPP-Helpers)
 
-# Add the build directory to the search path
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 #-----------------------------------------------------------------------------
 # Print header with the CMake project version and the KPP repo version
 #-----------------------------------------------------------------------------
@@ -45,12 +42,6 @@ message("=================================================================")
 message("KPP-for-GEOS-Chem ${PROJECT_VERSION}")
 message("Current status: ${KPP_REPO_VERSION}")
 message("=================================================================")
-
-#-----------------------------------------------------------------------------
-# Look for Bison and Flex on the system (dependencies of KPP)
-#-----------------------------------------------------------------------------
-find_package(BISON)
-find_package(FLEX)
 
 #-----------------------------------------------------------------------------
 # Declare the KppBuildProperties
@@ -72,7 +63,7 @@ set(KPP_C_FLAGS_Intel
   CACHE STRING "KPP compiler flags for all build types with Intel compilers"
 )
 set(KPP_C_FLAGS_RELEASE_Intel
-   -g
+    -g
     CACHE STRING "KPP compiler flags for build type release with Intel compilers"
 )
 set(KPP_C_FLAGS_RELWITHDEBINFO_Intel
@@ -85,19 +76,19 @@ set(KPP_C_FLAGS_DEBUG_Intel
 )
 
 set(KPP_C_FLAGS_GNU
-    -g
-    CACHE STRING "KPP compiler flags for all build types with GNU compilers"
+  -g -w
+  CACHE STRING "KPP compiler flags for all build types with GNU compilers"
 )
 set(KPP_C_FLAGS_RELEASE_GNU
-  -g
+  -g -w
   CACHE STRING "KPP compiler flags for build type release with GNU compilers"
 )
 set(KPP_C_FLAGS_RELWITHDEBINFO_GNU
-   -g
+  -g -w
    CACHE STRING "KPP compiler flags for build type relwithdebinfo with GNU compilers"
 )
 set(KPP_C_FLAGS_DEBUG_GNU
-  -g -O0 -Wall
+  -O0 -Wall
   CACHE STRING "KPP compiler flags for build type debug with GNU compilers"
 )
 
@@ -118,7 +109,7 @@ target_compile_options(KppBuildProperties
       $<$<CONFIG:Release>:${KPP_C_FLAGS_RELEASE_Intel}>
    >
    $<$<STREQUAL:${CMAKE_C_COMPILER_ID},GNU>:
-      ${KPP_Fortran_FLAGS_GNU}
+      ${KPP_C_FLAGS_GNU}
       $<$<CONFIG:Debug>:${KPP_C_FLAGS_DEBUG_GNU}>
       $<$<CONFIG:RelWithDebInfo>:${KPP_C_FLAGS_RELWITHDEBINFO_GNU}>
       $<$<CONFIG:Release>:${KPP_C_FLAGS_RELEASE_GNU}>
@@ -126,11 +117,20 @@ target_compile_options(KppBuildProperties
 )
 
 #-----------------------------------------------------------------------------
-# Define where locally-built library files (*.lib) will be placed
+# Define library and include paths
 #-----------------------------------------------------------------------------
+
+# Define where locally-built library files (*.lib) will be placed
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 target_include_directories(KppBuildProperties
-  INTERFACE ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
+  INTERFACE
+  ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
+)
+
+# Define include directories for *.h files
+target_include_directories(KppBuildProperties
+  INTERFACE
+  ${CMAKE_BINARY_DIR}/kpp-code/src
 )
 
 #-----------------------------------------------------------------------------
