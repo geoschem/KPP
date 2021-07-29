@@ -16,6 +16,7 @@ project (kpp-for-geos-chem
 # https://cmake.org/cmake/help/latest/policy/CMP0057.html
 # https://cmake.org/cmake/help/latest/policy/CMP0074.html
 # https://cmake.org/cmake/help/latest/policy/CMP0079.html
+# https://cmake.org/cmake/help/latest/policy/CMP0088.html
 #-----------------------------------------------------------------------------
 cmake_policy(SET CMP0054 NEW)
 cmake_policy(SET CMP0057 NEW)
@@ -24,6 +25,9 @@ if(POLICY CMP0074)
 endif()
 if(POLICY CMP0079)
   cmake_policy(SET CMP0079 NEW)
+endif()
+if (POLICY CMP0088)
+  cmake_policy(SET CMP0088 NEW)
 endif()
 
 #-----------------------------------------------------------------------------

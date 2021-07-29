@@ -6,7 +6,7 @@
 #-----------------------------------------------------------------------------
 message("Creating ${CMAKE_CURRENT_SOURCE_DIR}/version.h")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
-  ${CMAKE_CURRENT_SOURCE_DIR}/version.h @ONLY
+  ${CMAKE_CURRENT_BINARY_DIR}/version.h @ONLY
 )
 
 #-----------------------------------------------------------------------------
@@ -27,9 +27,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gdata.h
 )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/code.h
   ${CMAKE_CURRENT_BINARY_DIR}/code.h
-)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.h
-  ${CMAKE_CURRENT_BINARY_DIR}/version.h
 )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/code.c
   ${CMAKE_CURRENT_BINARY_DIR}/code.c
@@ -64,8 +61,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scanutil.c
 # Copy y.tab.h back to the source code folder as this is what works
 #-----------------------------------------------------------------------------
 find_package(BISON)
-BISON_TARGET(Parser
-  ${CMAKE_CURRENT_SOURCE_DIR}/scan.y ${CMAKE_CURRENT_BINARY_DIR}/y.tab.c
+BISON_TARGET(Parser scan.y y.tab.c
   COMPILE_FLAGS -d
   DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/y.tab.h
 )
@@ -75,8 +71,7 @@ BISON_TARGET(Parser
 # Make the Lexer depend on the Parser so that it can use Parser tokens#
 #-----------------------------------------------------------------------------
 find_package(FLEX)
-FLEX_TARGET(Lexer
-  ${CMAKE_CURRENT_SOURCE_DIR}/scan.l ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.c
+FLEX_TARGET(Lexer scan.l lex.yy.c
 )
 ADD_FLEX_BISON_DEPENDENCY(Lexer Parser)
 
