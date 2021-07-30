@@ -10,6 +10,13 @@ project (kpp-for-geos-chem
 )
 
 #-----------------------------------------------------------------------------
+# Define project and version number
+#-----------------------------------------------------------------------------
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}" CACHE PATH "..." FORCE)
+endif()
+
+#-----------------------------------------------------------------------------
 # Set CMake policies.  For more information, see:
 #
 # https://cmake.org/cmake/help/latest/policy/CMP0054.html
