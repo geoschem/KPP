@@ -1,118 +1,72 @@
 # kpp-code/src/CMakeLists.txt
 # Compiles KPP source code
 
+# Find bison and flex
+find_package(BISON REQUIRED)
+message(STATUS "Bison executable: ${BISON_EXECUTABLE}")
+
+find_package(FLEX REQUIRED)       # flex is required
+message(STATUS "Flex executable:  ${FLEX_EXECUTABLE}")
+message(STATUS "Flex libraries:   ${FLEX_LIBRARIES}")
+# FindFLEX.cmake doesn't fail if libfl isn't found. We need it so
+# we need to assert it's found.
+if(NOT FLEX_LIBRARIES)
+  message(FATAL_ERROR "Failed to find libfl (libfl.so or libfl.a)!")
+endif()
+
 #-----------------------------------------------------------------------------
 # Copy the CMake project version number to the version.h file
 #-----------------------------------------------------------------------------
-message("Creating ${CMAKE_CURRENT_SOURCE_DIR}/version.h")
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/version.h @ONLY
-)
-
-#-----------------------------------------------------------------------------
-# Copy source code to the build directory.  This is in order to get the
-# '#include y.tab.h' in scanner.c to work properly, since that will look
-# for the include file in the current folder.  If we place y.tab.h in the
-# source code, we will break the separation between the build-generated
-# files, which would be undesirable.
-#-----------------------------------------------------------------------------
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scan.h
-  ${CMAKE_CURRENT_BINARY_DIR}/scan.h
-)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gdef.h
-  ${CMAKE_CURRENT_BINARY_DIR}/gdef.h
-)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gdata.h
-  ${CMAKE_CURRENT_BINARY_DIR}/gdata.h
-)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/code.h
-  ${CMAKE_CURRENT_BINARY_DIR}/code.h
-)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/code.c
-  ${CMAKE_CURRENT_BINARY_DIR}/code.c
-)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/code_c.c
-  ${CMAKE_CURRENT_BINARY_DIR}/code_c.c
-)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/code_f77.c
-  ${CMAKE_CURRENT_BINARY_DIR}/code_f77.c
-)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/code_f90.c
-  ${CMAKE_CURRENT_BINARY_DIR}/code_f90.c
-)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/code_matlab.c
-  ${CMAKE_CURRENT_BINARY_DIR}/code_matlab.c
-)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/debug.c
-  ${CMAKE_CURRENT_BINARY_DIR}/debug.c
-)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gen.c
-  ${CMAKE_CURRENT_BINARY_DIR}/gen.c
-)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scanner.c
-  ${CMAKE_CURRENT_BINARY_DIR}/scanner.c
-)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scanutil.c
-  ${CMAKE_CURRENT_BINARY_DIR}/scanutil.c
-)
+message(VERBOSE "Creating ${CMAKE_CURRENT_SOURCE_DIR}/version.h")
+configure_file(version.h.in version.h @ONLY)
 
 #-----------------------------------------------------------------------------
 # Use Bison to create Parser files: y.tab.c and y.tab.h
 # Copy y.tab.h back to the source code folder as this is what works
 #-----------------------------------------------------------------------------
-find_package(BISON)
 BISON_TARGET(Parser scan.y y.tab.c
   COMPILE_FLAGS -d
   DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/y.tab.h
 )
+message(VERBOSE "Bison outputs: ${BISON_Parser_OUTPUTS}")
 
 #-----------------------------------------------------------------------------
 # Use Flex to creat Lexer files: lex.yy.c
 # Make the Lexer depend on the Parser so that it can use Parser tokens#
 #-----------------------------------------------------------------------------
-find_package(FLEX)
-FLEX_TARGET(Lexer scan.l lex.yy.c
-)
+FLEX_TARGET(Lexer scan.l lex.yy.c)
 ADD_FLEX_BISON_DEPENDENCY(Lexer Parser)
-
-#-----------------------------------------------------------------------------
-# Print Bison/Flex variables to screen
-#-----------------------------------------------------------------------------
-pretty_print(SECTION "Bison")
-pretty_print(VARIABLE BISON_EXECUTABLE)
-pretty_print(VARIABLE BISON_COMPILE_FLAGS)
-pretty_print(VARIABLE BISON_Parser_OUTPUTS)
-pretty_print(SECTION "Flex")
-pretty_print(VARIABLE FLEX_EXECUTABLE)
-pretty_print(VARIABLE FLEX_INCLUDE_DIR)
-pretty_print(VARIABLE FLEX_LIBRARIES)
-pretty_print(VARIABLE FLEX_Lexer_OUTPUTS)
+message(VERBOSE "Flex outputs: ${FLEX_Lexer_OUTPUTS}")
 
 #-----------------------------------------------------------------------------
 # Compile KPP source code into libKppSource.a
 #-----------------------------------------------------------------------------
 add_library(KppSource
   STATIC EXCLUDE_FROM_ALL
+  code.c
+  code_c.c
+  code_f77.c
+  code_f90.c
+  code_matlab.c
+  debug.c
+  gen.c
+  scanner.c
+  scanutil.c
   ${BISON_Parser_OUTPUTS}
   ${FLEX_Lexer_OUTPUTS}
-  ${CMAKE_CURRENT_BINARY_DIR}/code.h
-  ${CMAKE_CURRENT_BINARY_DIR}/gdata.h
-  ${CMAKE_CURRENT_BINARY_DIR}/gdef.h
-  ${CMAKE_CURRENT_BINARY_DIR}/scan.h
-  ${CMAKE_CURRENT_BINARY_DIR}/version.h
-  ${CMAKE_CURRENT_BINARY_DIR}/code.c
-  ${CMAKE_CURRENT_BINARY_DIR}/code_c.c
-  ${CMAKE_CURRENT_BINARY_DIR}/code_f77.c
-  ${CMAKE_CURRENT_BINARY_DIR}/code_f90.c
-  ${CMAKE_CURRENT_BINARY_DIR}/code_matlab.c
-  ${CMAKE_CURRENT_BINARY_DIR}/debug.c
-  ${CMAKE_CURRENT_BINARY_DIR}/gen.c
-  ${CMAKE_CURRENT_BINARY_DIR}/scanner.c
-  ${CMAKE_CURRENT_BINARY_DIR}/scanutil.c
 )
+target_include_directories(KppSource
+  PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(KppSource PUBLIC ${FLEX_LIBRARIES})
 
-# KppSource depends on the Flex/Bison-generated code
-target_link_libraries(KppSource
-  PUBLIC
-  ${FLEX_LIBRARIES}
+
+#-----------------------------------------------------------------------------
+# Declare the kpp target
+#-----------------------------------------------------------------------------
+add_executable(kpp kpp.c)
+target_link_libraries(kpp PUBLIC KppSource)
+set_target_properties(kpp
+  PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+install(TARGETS kpp RUNTIME)
