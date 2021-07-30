@@ -57,7 +57,7 @@ add_library(KppSource
 )
 target_include_directories(KppSource
   PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(KppSource PUBLIC ${FLEX_LIBRARIES})
+target_link_libraries(KppSource PUBLIC KppBuildProperties ${FLEX_LIBRARIES})
 
 
 #-----------------------------------------------------------------------------
@@ -65,8 +65,4 @@ target_link_libraries(KppSource PUBLIC ${FLEX_LIBRARIES})
 #-----------------------------------------------------------------------------
 add_executable(kpp kpp.c)
 target_link_libraries(kpp PUBLIC KppSource)
-set_target_properties(kpp
-  PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
 install(TARGETS kpp RUNTIME)
