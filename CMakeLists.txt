@@ -35,23 +35,6 @@ if (POLICY CMP0098)
 endif()
 
 #-----------------------------------------------------------------------------
-# Add directories and functions to the search path
-#-----------------------------------------------------------------------------
-
-# Add CMakeScripts/ to the module path and import helper functions
-list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/CMakeScripts)
-include(KPP-Helpers)
-
-#-----------------------------------------------------------------------------
-# Print header with the CMake project version and the KPP repo version
-#-----------------------------------------------------------------------------
-get_repo_version(KPP_REPO_VERSION ${CMAKE_CURRENT_SOURCE_DIR})
-message("=================================================================")
-message("KPP-for-GEOS-Chem ${PROJECT_VERSION}")
-message("Current status: ${KPP_REPO_VERSION}")
-message("=================================================================")
-
-#-----------------------------------------------------------------------------
 # Declare the KppBuildProperties
 #
 # All KPP targets depend on this. This is used to control the compiler
@@ -129,16 +112,10 @@ target_compile_options(KppBuildProperties
 #-----------------------------------------------------------------------------
 
 # Define where locally-built library files (*.lib) will be placed
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
-target_include_directories(KppBuildProperties
-  INTERFACE
-  ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
-)
-
-# Define include directories for *.h files
-target_include_directories(KppBuildProperties
-  INTERFACE
-  ${CMAKE_BINARY_DIR}/kpp-code/src
+set_target_properties(KppBuildProperties
+  PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib
 )
 
 #-----------------------------------------------------------------------------
@@ -155,35 +132,3 @@ endif()
 # Look in other folders for source code
 #-----------------------------------------------------------------------------
 add_subdirectory(kpp-code)
-
-#-----------------------------------------------------------------------------
-# Display variables
-#-----------------------------------------------------------------------------
-pretty_print(SECTION "Useful CMake variables")
-pretty_print(VARIABLE PROJECT_SOURCE_DIR)
-pretty_print(VARIABLE CMAKE_BINARY_DIR)
-pretty_print(VARIABLE CMAKE_BUILD_TYPE)
-
-#-----------------------------------------------------------------------------
-# Write KppBuildProperties's configuration to a file
-#-----------------------------------------------------------------------------
-get_target_property(BT_DEFINITIONS  KppBuildProperties
-    INTERFACE_COMPILE_DEFINITIONS
-)
-get_target_property(BT_OPTIONS      KppBuildProperties
-    INTERFACE_COMPILE_OPTIONS
-)
-get_target_property(BT_LIBRARIES    KppBuildProperties
-    INTERFACE_LINK_LIBRARIES
-)
-get_target_property(BT_INCLUDES     KppBuildProperties
-    INTERFACE_INCLUDE_DIRECTORIES
-)
-file(WRITE ${CMAKE_BINARY_DIR}/KppBuildProperties.txt
-    "# This file shows the KppBuildProperties's configuration.\n"
-    "\n"
-    "KppBuildProperties::INTERFACE_COMPILE_DEFINITIONS:${BT_DEFINITIONS}\n"
-    "KppBuildProperties::INTERFACE_COMPILE_OPTIONS:${BT_OPTIONS}\n"
-    "KppBuildProperties::INTERFACE_LINK_LIBRARIES:${BT_LIBRARIES}\n"
-    "KppBuildProperties::INTERFACE_INCLUDE_DIRECTORIES:${BT_INCLUDES}\n"
-)
