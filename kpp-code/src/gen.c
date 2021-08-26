@@ -588,6 +588,16 @@ int dim;
 
   /* Free local arrays */
   free(irow); free(icol); free(crow); free(diag);
+  F90_Inline("  INTEGER, ALLOCATABLE :: DO_JVS(:)");
+  F90_Inline("  INTEGER, ALLOCATABLE :: DO_SLV(:)");
+  F90_Inline("  INTEGER, ALLOCATABLE :: DO_FUN(:)");
+  F90_Inline("  INTEGER, ALLOCATABLE :: cLU_IROW(:)  ! Compacted ROW indexes");
+  F90_Inline("  INTEGER, ALLOCATABLE :: cLU_ICOL(:)  ! Compacted COL indexes");
+  F90_Inline("  INTEGER, ALLOCATABLE :: cLU_CROW(:)  ! Compacted compressed row vector");
+  F90_Inline("  INTEGER, ALLOCATABLE :: cLU_DIAG(:)  ! Compacted DIAG indexes");
+  F90_Inline("  INTEGER, ALLOCATABLE :: JVS_MAP(:)   ! Map to JVS from compacted sparse data");
+  F90_Inline("  INTEGER :: rNVAR     ! Compacted number of variable species");
+  F90_Inline("  INTEGER :: cNONZERO  ! Compacted number of non-zero elements in cJVS");
 }
 
 
@@ -734,6 +744,7 @@ int F_VAR, FSPLIT_VAR;
       sum = Const(0);
       for (j = 0; j < EqnNr; j++)
         sum = Add( sum, Mul( Const( Stoich[i][j] ), Elm( A, j ) ) );
+      F90_Inline("IF (DO_FUN(%d).eq.1) &",i+1);
       Assign( Elm( Vdot, i ), sum );
     }
     for (i = VarNr; i < VarNr; i++) {
@@ -1205,6 +1216,7 @@ int Jac_SP, Jac;
             sum = Add( sum, Mul( Const( Stoich[i][k] ), Elm( BV, structB[k][j]-1 ) ) );
         }
 	/* Comment the B */
+	 F90_Inline("IF (DO_JVS(%d).eq.1) &",nElm+1);
 	 WriteComment("JVS(%d) = Jac_FULL(%d,%d)",
 	          Index(nElm),Index(i),Index(j));
          Assign( Elm( JVS, nElm ), sum );
@@ -1937,9 +1949,10 @@ int dim;
     if( ibgn <= iend ) {
       sum = Elm( X, i );
       if ( ibgn < iend ) {
+      F90_Inline("IF (DO_SLV(%d).eq.1) &",i+1);
         for( j = ibgn; j < iend; j++ )
           sum = Sub( sum, Mul( Elm( JVS, j ), Elm( X, icol[j] ) ) );
-        Assign( Elm( X, i ), sum );
+	Assign( Elm( X, i ), sum );
       }
     }
   }
@@ -1948,6 +1961,7 @@ int dim;
     ibgn = diag[i] + 1;
     iend = crow[i+1];
     sum = Elm( X, i );
+    F90_Inline("IF (DO_SLV(%d).eq.1) &",i+1);
     for( j = ibgn; j < iend; j++ )
       sum = Sub( sum, Mul( Elm( JVS, j ), Elm( X, icol[j] ) ) );
     sum = Div( sum, Elm( JVS, diag[i] ) );
@@ -2388,7 +2402,6 @@ int j,dummy_species;
     FreeVariable( spc );
   }
 }
-
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/

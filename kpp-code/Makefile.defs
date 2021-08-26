@@ -64,7 +64,8 @@ endif
 #    turns on optimization. If you are experiencing problems you may try 
 #    "-g" to include debuging informations.
 
-CC_FLAGS= -g -Wall
+#CC_FLAGS= -g -Wall -rdynamic
+CC_FLAGS= -g -w -rdynamic
 
 # 5. Path to include additional directories
 #    Typically: /usr/include on Linux
