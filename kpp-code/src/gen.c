@@ -596,6 +596,7 @@ int dim;
   F90_Inline("  INTEGER, ALLOCATABLE :: cLU_CROW(:)  ! Compacted compressed row vector");
   F90_Inline("  INTEGER, ALLOCATABLE :: cLU_DIAG(:)  ! Compacted DIAG indexes");
   F90_Inline("  INTEGER, ALLOCATABLE :: JVS_MAP(:)   ! Map to JVS from compacted sparse data");
+  F90_Inline("  INTEGER, ALLOCATABLE :: SPC_MAP(:)   ! Map species (for Fun(), etc.)");
   F90_Inline("  INTEGER :: rNVAR     ! Compacted number of variable species");
   F90_Inline("  INTEGER :: cNONZERO  ! Compacted number of non-zero elements in cJVS");
 }
@@ -669,6 +670,7 @@ int F_VAR, FSPLIT_VAR;
     fprintf(functionFile, "!\n");
     fprintf(functionFile, "! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
     fprintf(functionFile, "SUBROUTINE Fun ( V, F, RCT, Vdot, Aout )\n\n");
+    F90_Inline(" USE %s_JacobianSP, only : DO_FUN\n", rootFileName );
     fprintf(functionFile, "! V - Concentrations of variable species (local)\n");
     fprintf(functionFile, "  REAL(kind=dp) :: V(NVAR)\n");
     fprintf(functionFile, "! F - Concentrations of fixed species (local)\n");
