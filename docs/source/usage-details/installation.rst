@@ -23,13 +23,12 @@ Very soon we hope to integrate :program:`KPP-for-GEOS-Chem` into
 GEOS-Chem more directly so that you will not need to use a specific
 KPP-for-GEOS-Chem version with specific GEOS-Chem versions.
 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-KPP-for-GEOS-Chem 2.3.3_gc -- for bleeding-edge development
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KPP-for-GEOS-Chem 2.3.3_gc -- for GEOS-Chem 13.3.0 and later
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The current version of :program:`KPP-for-GEOS-Chem 2.3.3_gc` is for
-use with ongoing GEOS-Chem development. It should not yet be used with
-any released GEOS-Chem versions.
+If you will be working with GEOS-Chem 13.3.0 and later, then you will
+need to download :program:`KPP-for-GEOS-Chem 2.3.\3_gc`.  
 
 To download this version, type at the command line:
 
